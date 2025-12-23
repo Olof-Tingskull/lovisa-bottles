@@ -1,4 +1,3 @@
-import { type Prisma } from '@prisma/client'
 import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { prisma } from '@/lib/prisma'
@@ -85,7 +84,7 @@ export async function POST(request: NextRequest) {
       const randomBottle = unopenedBottles[Math.floor(Math.random() * unopenedBottles.length)]
 
       // Create journal and open bottle in transaction
-      const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const result = await prisma.$transaction(async (tx) => {
         // Create journal entry first
         const journalEntry = await tx.journalEntry.create({
           data: {
