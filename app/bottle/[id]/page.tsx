@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import type { BottleBlock, BottleContent } from '@/lib/types'
 
@@ -19,7 +19,7 @@ export default function BottlePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const fetchBottle = async () => {
+  const fetchBottle = useCallback(async () => {
     try {
       const res = await fetch(`/api/bottles/${bottleId}`, {
         headers: {
@@ -39,7 +39,7 @@ export default function BottlePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [bottleId, token])
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -68,7 +68,6 @@ export default function BottlePage() {
         return (
           <div key={index} className="space-y-3">
             <div className="relative w-full overflow-hidden border border-white/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={block.url}
                 alt={block.caption || 'Image'}

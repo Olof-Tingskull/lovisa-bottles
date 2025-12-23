@@ -96,7 +96,6 @@ export async function POST(request: NextRequest) {
       const bottle = await prisma.bottle.create({
         data: {
           name,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           content: content as any,
         },
       })
