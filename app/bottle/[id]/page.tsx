@@ -19,18 +19,6 @@ export default function BottlePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/login')
-    }
-  }, [user, isLoading, router])
-
-  useEffect(() => {
-    if (user && token) {
-      fetchBottle()
-    }
-  }, [user, token, fetchBottle])
-
   const fetchBottle = async () => {
     try {
       const res = await fetch(`/api/bottles/${bottleId}`, {
@@ -52,6 +40,18 @@ export default function BottlePage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login')
+    }
+  }, [user, isLoading, router])
+
+  useEffect(() => {
+    if (user && token) {
+      fetchBottle()
+    }
+  }, [user, token, fetchBottle])
 
   const renderBlock = (block: BottleBlock, index: number) => {
     switch (block.type) {

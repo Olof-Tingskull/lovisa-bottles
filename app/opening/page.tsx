@@ -1,9 +1,9 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
-export default function OpeningPage() {
+function OpeningContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const bottleId = searchParams.get('bottle')
@@ -55,5 +55,22 @@ export default function OpeningPage() {
         </button>
       </div>
     </div>
+  )
+}
+
+export default function OpeningPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
+          <div className="text-center space-y-6">
+            <div className="text-6xl mb-8 animate-pulse">🍾</div>
+            <p className="text-[#ff006e] font-mono text-lg">loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <OpeningContent />
+    </Suspense>
   )
 }
