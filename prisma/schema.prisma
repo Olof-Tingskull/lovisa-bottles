@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  isAdmin      Boolean  @default(false) @map("is_admin")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  journals    JournalEntry[]
+  bottleOpens BottleOpen[]
+
+  @@map("users")
+}
+
+model JournalEntry {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  date      DateTime
+  entry     String   @db.Text
+  images    String[] @default([]) // Array of image URLs
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Link to bottle open (optional - can write journal without opening bottle)
+  bottleOpen BottleOpen?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@map("journal_entries")
+}
+
+model Bottle {
+  id        Int      @id @default(autoincrement())
+  name      String // Display name/title for the bottle
+  content   Json // All content blocks (text, images, videos, etc)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  opens BottleOpen[] // Track who opened it and when
+
+  @@map("bottles")
+}
+
+model BottleOpen {
+  id             Int      @id @default(autoincrement())
+  bottleId       Int      @map("bottle_id")
+  userId         Int      @map("user_id")
+  openedAt       DateTime @default(now()) @map("opened_at")
+  journalEntryId Int      @unique @map("journal_entry_id") 
+
+  bottle       Bottle       @relation(fields: [bottleId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade) 
+
+  @@unique([bottleId, userId]) // Can't open same bottle twice
+  @@map("bottle_opens")
+}
