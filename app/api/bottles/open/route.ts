@@ -33,25 +33,25 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Only enforce restrictions for non-admin users
-      if (!user.isAdmin) {
-        // Check if already opened
-        const existingOpen = await prisma.bottleOpen.findUnique({
-          where: {
-            bottleId_userId: {
-              bottleId,
-              userId: user.id,
-            },
+      // Check if already opened this specific bottle (applies to everyone, including admins)
+      const existingOpen = await prisma.bottleOpen.findUnique({
+        where: {
+          bottleId_userId: {
+            bottleId,
+            userId: user.id,
           },
-        })
+        },
+      })
 
-        if (existingOpen) {
-          return NextResponse.json(
-            { error: 'Bottle already opened' },
-            { status: 400 }
-          )
-        }
+      if (existingOpen) {
+        return NextResponse.json(
+          { error: 'Bottle already opened' },
+          { status: 400 }
+        )
+      }
 
+      // Only enforce daily limit for non-admin users
+      if (!user.isAdmin) {
         // Check if user has already opened a bottle today
         const today = new Date()
         today.setHours(0, 0, 0, 0)
@@ -87,38 +87,14 @@ export async function POST(request: NextRequest) {
           },
         })
 
-        // Mark bottle as opened and link to journal
-        // For admins, if they already opened this bottle, update the existing record
-        // For regular users, create a new record (guaranteed to not exist due to checks above)
-        let bottleOpen
-        if (user.isAdmin) {
-          // Try to upsert for admins
-          bottleOpen = await tx.bottleOpen.upsert({
-            where: {
-              bottleId_userId: {
-                bottleId,
-                userId: user.id,
-              },
-            },
-            update: {
-              journalEntryId: journalEntry.id,
-              openedAt: new Date(),
-            },
-            create: {
-              bottleId,
-              userId: user.id,
-              journalEntryId: journalEntry.id,
-            },
-          })
-        } else {
-          bottleOpen = await tx.bottleOpen.create({
-            data: {
-              bottleId,
-              userId: user.id,
-              journalEntryId: journalEntry.id,
-            },
-          })
-        }
+        // Create bottle open record
+        const bottleOpen = await tx.bottleOpen.create({
+          data: {
+            bottleId,
+            userId: user.id,
+            journalEntryId: journalEntry.id,
+          },
+        })
 
         return { bottleOpen, journalEntry }
       })

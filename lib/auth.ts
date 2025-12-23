@@ -9,6 +9,8 @@ if (!JWT_SECRET) {
 
 export interface JWTPayload {
   userId: number
+  email: string
+  isAdmin: boolean
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -22,8 +24,8 @@ export async function verifyPassword(
   return bcrypt.compare(password, hashedPassword)
 }
 
-export function generateToken(userId: number): string {
-  return jwt.sign({ userId } as JWTPayload, JWT_SECRET, {
+export function generateToken(userId: number, email: string, isAdmin: boolean): string {
+  return jwt.sign({ userId, email, isAdmin } as JWTPayload, JWT_SECRET, {
     expiresIn: '30d',
   })
 }

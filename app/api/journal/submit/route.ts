@@ -15,36 +15,37 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Check if user has already opened a bottle today
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const tomorrow = new Date(today)
-      tomorrow.setDate(tomorrow.getDate() + 1)
+      // Check if user has already opened a bottle today (skip check for admins)
+      if (!user.isAdmin) {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const tomorrow = new Date(today)
+        tomorrow.setDate(tomorrow.getDate() + 1)
 
-      const openedToday = await prisma.bottleOpen.findFirst({
-        where: {
-          userId: user.id,
-          openedAt: {
-            gte: today,
-            lt: tomorrow,
-          },
-        },
-      })
-
-      if (openedToday) {
-        // Already opened a bottle today, just create journal
-        const journalEntry = await prisma.journalEntry.create({
-          data: {
+        const openedToday = await prisma.bottleOpen.findFirst({
+          where: {
             userId: user.id,
-            date: new Date(),
-            entry,
+            openedAt: {
+              gte: today,
+              lt: tomorrow,
+            },
           },
         })
 
-        return NextResponse.json({
-          journalId: journalEntry.id,
-          message: 'Journal created. You already opened a bottle today.',
-        })
+        if (openedToday) {
+          const journalEntry = await prisma.journalEntry.create({
+            data: {
+              userId: user.id,
+              date: new Date(),
+              entry,
+            },
+          })
+
+          return NextResponse.json({
+            journalId: journalEntry.id,
+            message: 'Journal created. You already opened a bottle today.',
+          })
+        }
       }
 
       // Get unopened bottles

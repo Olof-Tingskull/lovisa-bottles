@@ -52,31 +52,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8 p-10 bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-purple-200">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-black">
+      <div className="max-w-sm w-full space-y-8">
         <div>
-          <div className="text-6xl text-center mb-4">🍾</div>
-          <h2 className="text-4xl font-bold text-center bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 bg-clip-text text-transparent">
-            {isSignup ? 'Create Account' : 'Welcome Back'}
+          <h2 className="text-xl text-center text-[#ff006e] font-mono tracking-wider">
+            {isSignup ? '> CREATE_ACCOUNT' : '> LOGIN'}
           </h2>
-          <p className="mt-3 text-center text-purple-700 font-medium text-lg">
-            {isSignup
-              ? 'Set up your account to get started'
-              : 'Sign in to continue'}
-          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-100 border-2 border-red-400 text-red-800 px-5 py-4 rounded-2xl font-medium">
-              {error}
+            <div className="text-[#ff006e] text-sm font-mono text-center border border-[#ff006e] px-4 py-2">
+              ERROR: {error}
             </div>
           )}
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-base font-semibold text-purple-900 mb-2">
-                Email
+              <label htmlFor="email" className="block text-sm text-white/60 font-mono mb-2">
+                email:
               </label>
               <input
                 id="email"
@@ -84,14 +78,14 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full px-4 py-3 border-2 border-purple-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-purple-900 placeholder-purple-400"
-                placeholder="your@email.com"
+                className="block w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono"
+                placeholder="user@domain.com"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-base font-semibold text-purple-900 mb-2">
-                Password
+              <label htmlFor="password" className="block text-sm text-white/60 font-mono mb-2">
+                password:
               </label>
               <input
                 id="password"
@@ -99,13 +93,13 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full px-4 py-3 border-2 border-purple-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-purple-900 placeholder-purple-400"
-                placeholder="••••••••"
+                className="block w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono"
+                placeholder="********"
                 minLength={8}
               />
               {isSignup && (
-                <p className="mt-2 text-sm text-purple-700 font-medium">
-                  Must be at least 8 characters
+                <p className="mt-1 text-xs text-white/40 font-mono">
+                  min 8 chars
                 </p>
               )}
             </div>
@@ -114,9 +108,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 hover:from-purple-700 hover:via-pink-600 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 transform transition hover:scale-105"
+            className="w-full py-2 text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition disabled:opacity-50 font-mono"
           >
-            {loading ? 'Loading...' : isSignup ? 'Create Account' : 'Sign In'}
+            {loading ? 'LOADING...' : isSignup ? 'CREATE' : 'ENTER'}
           </button>
 
           <div className="text-center">
@@ -126,11 +120,11 @@ export default function LoginPage() {
                 setIsSignup(!isSignup)
                 setError('')
               }}
-              className="text-base text-purple-700 hover:text-pink-600 font-semibold transition"
+              className="text-sm text-white/50 hover:text-[#ff006e] font-mono transition"
             >
               {isSignup
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Sign up"}
+                ? '< back to login'
+                : '> create account'}
             </button>
           </div>
         </form>

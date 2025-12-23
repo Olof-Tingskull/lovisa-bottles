@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -151,91 +152,87 @@ export default function AdminPage() {
 
   if (isLoading || loadingBottles) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-2xl text-purple-700 font-semibold">Loading...</p>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="text-white/50 font-mono">loading...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-4">
-        <div className="text-6xl">🔒</div>
-        <p className="text-2xl text-red-700 font-bold text-center">{error}</p>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-8 px-4">
+        <p className="text-[#ff006e] font-mono text-center border border-[#ff006e] px-4 py-2">ERROR: {error}</p>
         {error.includes('restart') && (
-          <div className="bg-yellow-100 border-2 border-yellow-400 text-yellow-900 px-6 py-4 rounded-2xl max-w-md text-center">
-            <p className="font-semibold mb-2">How to fix:</p>
-            <p className="text-sm">1. Stop your dev server (Ctrl+C)</p>
-            <p className="text-sm">2. Run: <code className="bg-yellow-200 px-2 py-1 rounded">npm run dev</code></p>
-            <p className="text-sm">3. Refresh this page</p>
+          <div className="border border-white/20 text-white/60 px-6 py-4 max-w-md font-mono text-sm">
+            <p className="mb-2">{`> fix:`}</p>
+            <p>1. ctrl+c</p>
+            <p>2. npm run dev</p>
+            <p>3. refresh</p>
           </div>
         )}
         <button
           onClick={() => router.push('/')}
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 text-white rounded-2xl hover:from-purple-700 hover:via-pink-600 hover:to-red-600 font-bold shadow-lg transform transition hover:scale-105"
+          className="text-sm text-white/60 hover:text-[#ff006e] font-mono transition"
         >
-          Go Back Home
+          {`< back`}
         </button>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-white/70 backdrop-blur-md shadow-lg border-b-2 border-purple-200">
-        <div className="max-w-6xl mx-auto px-4 py-5 flex justify-between items-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 bg-clip-text text-transparent">
-            Admin Panel
+      <header className="border-b border-white/10">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-lg text-[#ff006e] font-mono tracking-wider">
+            ADMIN
           </h1>
           <button
             onClick={() => router.push('/')}
-            className="text-lg font-semibold text-blue-700 hover:text-pink-600 transition"
+            className="text-white/60 hover:text-[#ff006e] transition text-sm font-mono"
           >
-            ← Back to Home
+            {`< back`}
           </button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-6 py-12">
         {/* Create Bottle Form */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-8 border-2 border-pink-200">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-3">🍾</div>
-            <h2 className="text-2xl font-bold text-purple-900">Create New Bottle</h2>
-          </div>
+        <div className="mb-12">
+          <h2 className="text-base text-white/70 font-mono mb-8">{`> CREATE_BOTTLE`}</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-base font-semibold text-purple-900 mb-2">
-                Bottle Name
+              <label className="block text-sm text-white/60 font-mono mb-2">
+                name:
               </label>
               <input
                 type="text"
                 required
                 value={bottleName}
                 onChange={(e) => setBottleName(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-purple-300 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-purple-900 placeholder-purple-400"
-                placeholder="e.g., Birthday Surprise 2024"
+                className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono"
+                placeholder="bottle name..."
               />
             </div>
 
             {/* Content Blocks */}
             <div className="space-y-4">
-              <label className="block text-base font-semibold text-purple-900">
-                Content Blocks
+              <label className="block text-sm text-white/60 font-mono">
+                blocks:
               </label>
 
               {blocks.map((block, index) => (
-                <div key={index} className="bg-purple-50 p-5 rounded-2xl border-2 border-purple-200 space-y-3">
+                <div key={index} className="border border-white/20 p-4 space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-purple-900 uppercase">{block.type} Block</span>
+                    <span className="text-xs text-white/50 font-mono">[{block.type}]</span>
                     <button
                       type="button"
                       onClick={() => removeBlock(index)}
-                      className="text-red-600 hover:text-red-700 font-semibold"
+                      className="text-white/40 hover:text-[#ff006e] text-xs font-mono"
                     >
-                      Remove
+                      [x]
                     </button>
                   </div>
 
@@ -244,8 +241,8 @@ export default function AdminPage() {
                       value={block.content}
                       onChange={(e) => updateBlock(index, 'content', e.target.value)}
                       rows={4}
-                      className="w-full px-4 py-3 border-2 border-purple-300 rounded-xl bg-white text-purple-900 placeholder-purple-400"
-                      placeholder="Enter your text content..."
+                      className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-sm"
+                      placeholder="text content..."
                     />
                   )}
 
@@ -255,16 +252,16 @@ export default function AdminPage() {
                         type="url"
                         value={block.url}
                         onChange={(e) => updateBlock(index, 'url', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-purple-300 rounded-xl bg-white text-purple-900 placeholder-purple-400"
-                        placeholder="Enter URL..."
+                        className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-sm"
+                        placeholder="url..."
                       />
                       {(block.type === 'image' || block.type === 'video') && (
                         <input
                           type="text"
                           value={block.caption || ''}
                           onChange={(e) => updateBlock(index, 'caption', e.target.value)}
-                          className="w-full px-4 py-3 border-2 border-purple-300 rounded-xl bg-white text-purple-900 placeholder-purple-400"
-                          placeholder="Caption (optional)..."
+                          className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-sm"
+                          placeholder="caption (optional)..."
                         />
                       )}
                       {block.type === 'voice' && (
@@ -272,8 +269,8 @@ export default function AdminPage() {
                           type="number"
                           value={block.duration || 0}
                           onChange={(e) => updateBlock(index, 'duration', parseInt(e.target.value))}
-                          className="w-full px-4 py-3 border-2 border-purple-300 rounded-xl bg-white text-purple-900 placeholder-purple-400"
-                          placeholder="Duration in seconds (optional)..."
+                          className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-sm"
+                          placeholder="duration (sec)..."
                         />
                       )}
                     </>
@@ -285,42 +282,36 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => addBlock('text')}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-semibold"
+                  className="px-3 py-1 text-xs text-white/60 border border-white/20 hover:border-[#ff006e] hover:text-[#ff006e] transition font-mono"
                 >
-                  + Text
+                  [+text]
                 </button>
                 <button
                   type="button"
                   onClick={() => addBlock('image')}
-                  className="px-4 py-2 bg-pink-600 text-white rounded-xl hover:bg-pink-700 font-semibold"
+                  className="px-3 py-1 text-xs text-white/60 border border-white/20 hover:border-[#ff006e] hover:text-[#ff006e] transition font-mono"
                 >
-                  + Image
+                  [+image]
                 </button>
                 <button
                   type="button"
                   onClick={() => addBlock('video')}
-                  className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 font-semibold"
+                  className="px-3 py-1 text-xs text-white/60 border border-white/20 hover:border-[#ff006e] hover:text-[#ff006e] transition font-mono"
                 >
-                  + Video
+                  [+video]
                 </button>
                 <button
                   type="button"
                   onClick={() => addBlock('voice')}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold"
+                  className="px-3 py-1 text-xs text-white/60 border border-white/20 hover:border-[#ff006e] hover:text-[#ff006e] transition font-mono"
                 >
-                  + Voice
+                  [+voice]
                 </button>
               </div>
             </div>
 
             {message && (
-              <div
-                className={`px-5 py-4 rounded-2xl font-semibold border-2 ${
-                  message.includes('error') || message.includes('failed')
-                    ? 'bg-red-100 border-red-400 text-red-800'
-                    : 'bg-pink-100 border-pink-400 text-pink-800'
-                }`}
-              >
+              <div className="text-[#ff006e] text-sm font-mono border border-[#ff006e] px-3 py-2">
                 {message}
               </div>
             )}
@@ -328,54 +319,58 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 hover:from-purple-700 hover:via-pink-600 hover:to-red-600 text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 transform transition hover:scale-105"
+              className="w-full py-2 text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition disabled:opacity-50 font-mono"
             >
-              {submitting ? 'Creating...' : 'Create Bottle'}
+              {submitting ? 'CREATING...' : 'CREATE'}
             </button>
           </form>
         </div>
 
         {/* All Bottles List */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-2 border-blue-200">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-3">📦</div>
-            <h2 className="text-2xl font-bold text-purple-900">All Bottles</h2>
-          </div>
+        <div>
+          <h2 className="text-base text-white/70 font-mono mb-8">{`> ALL_BOTTLES`}</h2>
 
           {bottles.length === 0 ? (
-            <p className="text-purple-600 text-center font-medium text-lg">No bottles created yet.</p>
+            <p className="text-white/40 font-mono">no bottles found.</p>
           ) : (
             <div className="space-y-4">
               {bottles.map((bottle) => (
                 <div
                   key={bottle.id}
-                  className="border-2 border-purple-200 rounded-2xl p-5 bg-white hover:bg-pink-50 transition-all"
+                  className="border border-white/20 p-4"
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="text-xl font-bold text-purple-900">{bottle.name}</h3>
-                      <p className="text-sm text-purple-600 mt-1">
-                        Created: {new Date(bottle.createdAt).toLocaleDateString()}
+                      <h3 className="text-base text-white/80 font-mono">{bottle.name}</h3>
+                      <p className="text-xs text-white/40 mt-1 font-mono">
+                        {new Date(bottle.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit'
+                        })}
                       </p>
                     </div>
                     <button
                       onClick={() => router.push(`/bottle/${bottle.id}`)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold"
+                      className="px-3 py-1 text-xs text-white/60 border border-white/20 hover:border-[#ff006e] hover:text-[#ff006e] transition font-mono"
                     >
-                      View
+                      [view]
                     </button>
                   </div>
-                  <div className="text-sm text-purple-700">
-                    <p className="font-semibold">Blocks: {bottle.content.blocks.length}</p>
-                    <p className="font-semibold">Opened by: {bottle.opens.length} users</p>
+                  <div className="text-xs text-white/50 font-mono space-y-1">
+                    <p>blocks: {bottle.content.blocks.length}</p>
+                    <p>opens: {bottle.opens.length}</p>
                   </div>
                   {bottle.opens.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-purple-200">
-                      <p className="text-sm font-semibold text-purple-900 mb-2">Recent opens:</p>
+                    <div className="mt-3 pt-3 border-t border-white/10">
+                      <p className="text-xs text-white/50 mb-2 font-mono">recent:</p>
                       <ul className="space-y-1">
                         {bottle.opens.slice(0, 3).map((open) => (
-                          <li key={open.id} className="text-sm text-purple-700">
-                            {open.user.email} - {new Date(open.openedAt).toLocaleDateString()}
+                          <li key={open.id} className="text-xs text-white/40 font-mono">
+                            {open.user.email} / {new Date(open.openedAt).toLocaleDateString('en-US', {
+                              month: '2-digit',
+                              day: '2-digit'
+                            })}
                           </li>
                         ))}
                       </ul>

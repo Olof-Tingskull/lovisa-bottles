@@ -58,11 +58,11 @@ model BottleOpen {
   bottleId       Int      @map("bottle_id")
   userId         Int      @map("user_id")
   openedAt       DateTime @default(now()) @map("opened_at")
-  journalEntryId Int      @unique @map("journal_entry_id") 
+  journalEntryId Int      @unique @map("journal_entry_id")
 
   bottle       Bottle       @relation(fields: [bottleId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade) 
+  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
 
   @@unique([bottleId, userId]) // Can't open same bottle twice
   @@map("bottle_opens")

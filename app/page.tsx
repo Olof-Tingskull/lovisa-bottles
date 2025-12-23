@@ -105,95 +105,76 @@ export default function HomePage() {
 
       // Clear form
       setEntry('')
-      setMessage(data.message)
 
-      // Refresh journals
-      fetchJournals()
-
-      // If a bottle was opened, redirect to it
+      // Redirect to opening/result page
       if (data.bottleId) {
-        setTimeout(() => {
-          router.push(`/bottle/${data.bottleId}`)
-        }, 1500)
+        router.push(`/opening?bottle=${data.bottleId}`)
+      } else {
+        // No bottle - show message on result page
+        router.push(`/opening?message=${encodeURIComponent(data.message)}`)
       }
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
       setSubmitting(false)
     }
   }
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-2xl text-purple-700 font-semibold">Loading...</p>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="text-white/50 font-mono">loading...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-white/70 backdrop-blur-md shadow-lg border-b-2 border-purple-200">
-        <div className="max-w-4xl mx-auto px-4 py-5 flex justify-between items-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 bg-clip-text text-transparent">
-            Message in a Bottle
+      <header className="border-b border-white/10">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-lg text-[#ff006e] font-mono tracking-wider">
+            BOTTLES
           </h1>
-          <div className="flex items-center gap-4">
-            <span className="text-base text-purple-800 font-medium">{user.email}</span>
+          <div className="flex items-center gap-6">
+            <span className="text-sm text-white/40 font-mono">{user.email}</span>
             {user.isAdmin && (
               <button
                 onClick={() => router.push('/admin')}
-                className="text-base font-semibold text-purple-700 hover:text-pink-600 px-4 py-2 rounded-lg hover:bg-purple-50 transition"
+                className="text-sm text-white/60 hover:text-[#ff006e] font-mono transition"
               >
-                Admin
+                [admin]
               </button>
             )}
             <button
               onClick={logout}
-              className="text-base font-semibold text-red-600 hover:text-red-700 px-4 py-2 rounded-lg hover:bg-red-50 transition"
+              className="text-sm text-white/60 hover:text-[#ff006e] font-mono transition"
             >
-              Logout
+              exit
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-3xl mx-auto px-6 py-12">
         {/* Journal Form */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-8 border-2 border-pink-200">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-3">✨</div>
-            <h2 className="text-2xl font-bold text-purple-900">Write Your Journal</h2>
-          </div>
+        <div className="mb-16">
+          <h2 className="text-base text-white/70 font-mono mb-6">{`> NEW_ENTRY`}</h2>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label
-                htmlFor="entry"
-                className="block text-base font-semibold text-purple-900 mb-2"
-              >
-                How was your day?
-              </label>
               <textarea
                 id="entry"
                 required
                 value={entry}
                 onChange={(e) => setEntry(e.target.value)}
-                rows={8}
-                className="w-full px-4 py-3 border-2 border-purple-300 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-purple-900 placeholder-purple-400"
-                placeholder="Write about your day..."
+                rows={6}
+                className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-sm resize-none"
+                placeholder="write your entry..."
               />
             </div>
 
             {message && (
-              <div
-                className={`px-5 py-4 rounded-2xl font-semibold border-2 ${
-                  message.includes('error') || message.includes('failed')
-                    ? 'bg-red-100 border-red-400 text-red-800'
-                    : 'bg-pink-100 border-pink-400 text-pink-800'
-                }`}
-              >
+              <div className="text-[#ff006e] text-sm font-mono border border-[#ff006e] px-3 py-2">
                 {message}
               </div>
             )}
@@ -201,64 +182,58 @@ export default function HomePage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 hover:from-purple-700 hover:via-pink-600 hover:to-red-600 text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 transform transition hover:scale-105"
+              className="py-2 px-6 text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition disabled:opacity-50 font-mono"
             >
-              {submitting ? 'Submitting...' : 'Submit & Open Bottle'}
+              {submitting ? 'SUBMIT...' : 'SUBMIT'}
             </button>
           </form>
         </div>
 
         {/* Journal History */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-2 border-blue-200">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-3">📖</div>
-            <h2 className="text-2xl font-bold text-purple-900">Your Journal History</h2>
-          </div>
+        <div>
+          <h2 className="text-base text-white/70 font-mono mb-6">{`> HISTORY`}</h2>
 
           {loadingJournals ? (
-            <p className="text-purple-700 text-center font-medium text-lg">Loading...</p>
+            <p className="text-white/40 font-mono">loading...</p>
           ) : journals.length === 0 ? (
-            <p className="text-purple-600 text-center font-medium text-lg">No journal entries yet.</p>
+            <p className="text-white/40 font-mono">no entries found.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {journals.map((journal) => (
                 <div
                   key={journal.id}
-                  className="border-2 border-purple-200 rounded-2xl p-5 hover:bg-pink-50 bg-white transition-all hover:shadow-lg hover:border-pink-300"
+                  className="border border-white/10 p-4 bg-black/50"
                 >
                   <div className="flex justify-between items-start mb-3">
-                    <p className="text-sm text-purple-600 font-semibold">
+                    <p className="text-xs text-white/40 font-mono">
                       {new Date(journal.date).toLocaleDateString('en-US', {
-                        weekday: 'long',
                         year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                        month: '2-digit',
+                        day: '2-digit'
                       })}
                     </p>
-                    <button
+{/*                    <button
                       onClick={() => handleDeleteJournal(journal.id)}
-                      className="text-red-600 hover:text-red-700 font-semibold text-sm px-3 py-1 rounded-lg hover:bg-red-50 transition"
-                      title="Delete this journal entry"
+                      className="text-xs text-white/40 hover:text-[#ff006e] font-mono transition"
+                      title="Delete"
                     >
-                      Delete
-                    </button>
+                      [delete]
+                    </button>*/}
                   </div>
-                  <div className="mb-4">
-                    <p className="text-base text-purple-900 whitespace-pre-wrap leading-relaxed">
+                  <div className="mb-3">
+                    <p className="text-sm text-white/80 whitespace-pre-wrap leading-relaxed font-mono">
                       {journal.entry}
                     </p>
                   </div>
                   {journal.bottleOpen && (
-                    <div className="pt-3 border-t border-purple-200">
-                      <button
-                        onClick={() =>
-                          router.push(`/bottle/${journal.bottleOpen!.bottle.id}`)
-                        }
-                        className="text-base text-blue-700 hover:text-pink-600 font-bold transition flex items-center gap-1"
-                      >
-                        🍾 View Bottle: {journal.bottleOpen.bottle.name}
-                      </button>
-                    </div>
+                    <button
+                      onClick={() =>
+                        router.push(`/bottle/${journal.bottleOpen!.bottle.id}`)
+                      }
+                      className="text-xs text-[#ff006e] hover:text-[#ff0080] font-mono transition"
+                    >
+                      {`> ${journal.bottleOpen.bottle.name}`}
+                    </button>
                   )}
                 </div>
               ))}

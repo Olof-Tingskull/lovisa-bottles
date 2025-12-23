@@ -1,28 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  /* Soft pastel gradient background */
-  --background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 50%, #e8eaf6 100%);
-  --foreground: #4a148c;
+  /* Pink hacker terminal theme */
+  --background: #000000;
+  --foreground: #ffffff;
 
-  /* Color palette */
-  --pink-soft: #fce4ec;
-  --pink-medium: #f48fb1;
-  --pink-dark: #ec407a;
-
-  --purple-soft: #f3e5f5;
-  --purple-medium: #ba68c8;
-  --purple-dark: #8e24aa;
-  --purple-deeper: #6a1b9a;
-
-  --red-soft: #ffebee;
-  --red-medium: #ef5350;
-  --red-dark: #d32f2f;
-
-  --blue-soft: #e8eaf6;
-  --blue-medium: #5c6bc0;
-  --blue-dark: #3949ab;
-  --blue-deeper: #1a237e;
+  /* Pink accent palette */
+  --pink-bright: #ff006e;
+  --pink-neon: #ff0080;
+  --pink-dim: #ff006e80;
+  --pink-darker: #80003740;
 }
 
 @theme inline {
@@ -33,9 +20,8 @@
 }
 
 body {
-  background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 50%, #e8eaf6 100%);
-  background-attachment: fixed;
-  color: #4a148c;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #000000;
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
   min-height: 100vh;
 }

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from './auth'
-import { prisma } from './prisma'
 
 export interface AuthenticatedUser {
   id: number
@@ -31,20 +30,11 @@ export async function withAuth(
     )
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: payload.userId },
-    select: {
-      id: true,
-      email: true,
-      isAdmin: true,
-    },
-  })
-
-  if (!user) {
-    return NextResponse.json(
-      { error: 'User not found' },
-      { status: 401 }
-    )
+  // Use the payload data directly from JWT (no DB query needed)
+  const user: AuthenticatedUser = {
+    id: payload.userId,
+    email: payload.email,
+    isAdmin: payload.isAdmin,
   }
 
   return handler(request, user)
