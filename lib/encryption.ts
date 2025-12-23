@@ -21,7 +21,7 @@ async function deriveKey(password: string, salt: BufferSource): Promise<CryptoKe
     encoder.encode(password),
     'PBKDF2',
     false,
-    ['deriveKey']
+    ['deriveKey'],
   )
 
   return window.crypto.subtle.deriveKey(
@@ -34,7 +34,7 @@ async function deriveKey(password: string, salt: BufferSource): Promise<CryptoKe
     passwordKey,
     { name: 'AES-GCM', length: 256 },
     false,
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   )
 }
 
@@ -51,7 +51,7 @@ export async function encryptText(text: string, password: string): Promise<strin
       iv,
     },
     key,
-    encoder.encode(text)
+    encoder.encode(text),
   )
 
   // Combine salt + iv + encrypted content
@@ -83,12 +83,12 @@ export async function decryptText(encryptedData: string, password: string): Prom
         iv,
       },
       key,
-      encryptedContent
+      encryptedContent,
     )
 
     const decoder = new TextDecoder()
     return decoder.decode(decryptedContent)
-  } catch (error) {
+  } catch (_error) {
     throw new Error('Decryption failed - wrong password or corrupted data')
   }
 }

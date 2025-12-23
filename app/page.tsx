@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 
 interface JournalEntry {
@@ -31,12 +31,6 @@ export default function HomePage() {
     }
   }, [user, isLoading, router])
 
-  useEffect(() => {
-    if (user && token) {
-      fetchJournals()
-    }
-  }, [user, token])
-
   const fetchJournals = async () => {
     try {
       const res = await fetch('/api/journal', {
@@ -56,8 +50,16 @@ export default function HomePage() {
     }
   }
 
-  const handleDeleteJournal = async (journalId: number) => {
-    if (!confirm('Are you sure you want to delete this journal entry? This action cannot be undone.')) {
+  useEffect(() => {
+    if (user && token) {
+      fetchJournals()
+    }
+  }, [user, token, fetchJournals])
+
+  const _handleDeleteJournal = async (journalId: number) => {
+    if (
+      !confirm('Are you sure you want to delete this journal entry? This action cannot be undone.')
+    ) {
       return
     }
 
@@ -132,9 +134,7 @@ export default function HomePage() {
       {/* Header */}
       <header className="border-b border-white/10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-lg text-[#ff006e] font-mono tracking-wider">
-            BOTTLES
-          </h1>
+          <h1 className="text-lg text-[#ff006e] font-mono tracking-wider">BOTTLES</h1>
           <div className="flex items-center gap-6">
             <span className="text-sm text-white/40 font-mono">{user.email}</span>
             {user.isAdmin && (
@@ -200,19 +200,16 @@ export default function HomePage() {
           ) : (
             <div className="space-y-6">
               {journals.map((journal) => (
-                <div
-                  key={journal.id}
-                  className="border border-white/10 p-4 bg-black/50"
-                >
+                <div key={journal.id} className="border border-white/10 p-4 bg-black/50">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs text-white/40 font-mono">
                       {new Date(journal.date).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: '2-digit',
-                        day: '2-digit'
+                        day: '2-digit',
                       })}
                     </p>
-{/*                    <button
+                    {/*                    <button
                       onClick={() => handleDeleteJournal(journal.id)}
                       className="text-xs text-white/40 hover:text-[#ff006e] font-mono transition"
                       title="Delete"
@@ -227,9 +224,7 @@ export default function HomePage() {
                   </div>
                   {journal.bottleOpen && (
                     <button
-                      onClick={() =>
-                        router.push(`/bottle/${journal.bottleOpen!.bottle.id}`)
-                      }
+                      onClick={() => router.push(`/bottle/${journal.bottleOpen?.bottle.id}`)}
                       className="text-xs text-[#ff006e] hover:text-[#ff0080] font-mono transition"
                     >
                       {`> ${journal.bottleOpen.bottle.name}`}

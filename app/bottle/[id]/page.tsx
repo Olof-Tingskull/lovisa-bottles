@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import Image from 'next/image'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { BottleContent, BottleBlock } from '@/lib/types'
+import type { BottleBlock, BottleContent } from '@/lib/types'
 
 export default function BottlePage() {
   const { user, token, isLoading } = useAuth()
@@ -30,7 +29,7 @@ export default function BottlePage() {
     if (user && token) {
       fetchBottle()
     }
-  }, [user, token, bottleId])
+  }, [user, token, fetchBottle])
 
   const fetchBottle = async () => {
     try {
@@ -76,41 +75,31 @@ export default function BottlePage() {
                 className="w-full h-auto object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
-                  target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23000000"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23ff006e" font-family="monospace"%3E[image unavailable]%3C/text%3E%3C/svg%3E'
+                  target.src =
+                    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23000000"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23ff006e" font-family="monospace"%3E[image unavailable]%3C/text%3E%3C/svg%3E'
                 }}
               />
             </div>
-            {block.caption && (
-              <p className="text-sm text-white/40 font-mono">{block.caption}</p>
-            )}
+            {block.caption && <p className="text-sm text-white/40 font-mono">{block.caption}</p>}
           </div>
         )
 
       case 'video':
         return (
           <div key={index} className="space-y-3">
-            <video
-              src={block.url}
-              controls
-              className="w-full border border-white/10"
-            />
-            {block.caption && (
-              <p className="text-sm text-white/40 font-mono">{block.caption}</p>
-            )}
+            <video src={block.url} controls className="w-full border border-white/10" />
+            {block.caption && <p className="text-sm text-white/40 font-mono">{block.caption}</p>}
           </div>
         )
 
       case 'voice':
         return (
           <div key={index} className="space-y-3">
-            <audio
-              src={block.url}
-              controls
-              className="w-full"
-            />
+            <audio src={block.url} controls className="w-full" />
             {block.duration && (
               <p className="text-sm text-white/40 font-mono">
-                [{Math.floor(block.duration / 60)}:{(block.duration % 60).toString().padStart(2, '0')}]
+                [{Math.floor(block.duration / 60)}:
+                {(block.duration % 60).toString().padStart(2, '0')}]
               </p>
             )}
           </div>
@@ -132,7 +121,9 @@ export default function BottlePage() {
   if (error) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-8 px-4">
-        <p className="text-[#ff006e] font-mono text-center border border-[#ff006e] px-4 py-2">ERROR: {error}</p>
+        <p className="text-[#ff006e] font-mono text-center border border-[#ff006e] px-4 py-2">
+          ERROR: {error}
+        </p>
         <button
           onClick={() => router.push('/')}
           className="text-sm text-white/60 hover:text-[#ff006e] font-mono transition"

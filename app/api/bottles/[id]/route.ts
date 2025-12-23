@@ -1,21 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
+import { prisma } from '@/lib/prisma'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withAuth(request, async (_req, user) => {
     try {
       const { id } = await params
-      const bottleId = parseInt(id)
+      const bottleId = parseInt(id, 10)
 
-      if (isNaN(bottleId)) {
-        return NextResponse.json(
-          { error: 'Invalid bottle ID' },
-          { status: 400 }
-        )
+      if (Number.isNaN(bottleId)) {
+        return NextResponse.json({ error: 'Invalid bottle ID' }, { status: 400 })
       }
 
       // Get the bottle
@@ -24,10 +18,7 @@ export async function GET(
       })
 
       if (!bottle) {
-        return NextResponse.json(
-          { error: 'Bottle not found' },
-          { status: 404 }
-        )
+        return NextResponse.json({ error: 'Bottle not found' }, { status: 404 })
       }
 
       // Check if user is admin OR has opened this bottle
@@ -44,7 +35,7 @@ export async function GET(
         if (!bottleOpen) {
           return NextResponse.json(
             { error: 'You have not opened this bottle yet' },
-            { status: 403 }
+            { status: 403 },
           )
         }
       }
@@ -58,10 +49,7 @@ export async function GET(
       })
     } catch (error) {
       console.error('Bottle detail error:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch bottle' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch bottle' }, { status: 500 })
     }
   })
 }

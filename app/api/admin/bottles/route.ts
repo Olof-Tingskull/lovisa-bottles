@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import jwt from 'jsonwebtoken'
+import { type NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { BottleContent } from '@/lib/types'
+import type { BottleContent } from '@/lib/types'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
     if (!name || !content || !content.blocks || content.blocks.length === 0) {
       return NextResponse.json(
         { error: 'Name and content with at least one block are required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -92,7 +93,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Text blocks must have content' }, { status: 400 })
       }
 
-      if ((block.type === 'image' || block.type === 'video' || block.type === 'voice') && !block.url) {
+      if (
+        (block.type === 'image' || block.type === 'video' || block.type === 'voice') &&
+        !block.url
+      ) {
         return NextResponse.json({ error: `${block.type} blocks must have a url` }, { status: 400 })
       }
     }

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 
 export default function LoginPage() {
@@ -97,11 +97,7 @@ export default function LoginPage() {
                 placeholder="********"
                 minLength={8}
               />
-              {isSignup && (
-                <p className="mt-1 text-xs text-white/40 font-mono">
-                  min 8 chars
-                </p>
-              )}
+              {isSignup && <p className="mt-1 text-xs text-white/40 font-mono">min 8 chars</p>}
             </div>
           </div>
 
@@ -122,9 +118,7 @@ export default function LoginPage() {
               }}
               className="text-sm text-white/50 hover:text-[#ff006e] font-mono transition"
             >
-              {isSignup
-                ? '< back to login'
-                : '> create account'}
+              {isSignup ? '< back to login' : '> create account'}
             </button>
           </div>
         </form>

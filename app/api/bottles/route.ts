@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
-import { BottleContent } from '@/lib/types'
+import { prisma } from '@/lib/prisma'
+import type { BottleContent } from '@/lib/types'
 
 // Get bottles (admin: all bottles with opens, user: unopened bottles only)
 export async function GET(request: NextRequest) {
-  return withAuth(request, async (req, user) => {
+  return withAuth(request, async (_req, user) => {
     try {
       if (user.isAdmin) {
         // Admins can see all bottles with open status
@@ -69,10 +69,7 @@ export async function GET(request: NextRequest) {
       }
     } catch (error) {
       console.error('Bottles fetch error:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch bottles' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch bottles' }, { status: 500 })
     }
   })
 }
@@ -81,29 +78,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return withAuth(request, async (_req, user) => {
     if (!user.isAdmin) {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
     try {
-      const { name, ...content }: { name: string } & BottleContent =
-        await request.json()
+      const { name, ...content }: { name: string } & BottleContent = await request.json()
 
       // Basic validation
       if (!name) {
-        return NextResponse.json(
-          { error: 'Bottle name is required' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Bottle name is required' }, { status: 400 })
       }
 
       if (!content.blocks || content.blocks.length === 0) {
-        return NextResponse.json(
-          { error: 'Invalid bottle content' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Invalid bottle content' }, { status: 400 })
       }
 
       const bottle = await prisma.bottle.create({
@@ -121,10 +108,7 @@ export async function POST(request: NextRequest) {
       })
     } catch (error) {
       console.error('Bottle creation error:', error)
-      return NextResponse.json(
-        { error: 'Failed to create bottle' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to create bottle' }, { status: 500 })
     }
   })
 }

@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
+import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, user) => {
@@ -8,16 +9,13 @@ export async function POST(request: NextRequest) {
       const { bottleId, entry } = await req.json()
 
       if (!bottleId) {
-        return NextResponse.json(
-          { error: 'Bottle ID is required' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Bottle ID is required' }, { status: 400 })
       }
 
       if (!entry) {
         return NextResponse.json(
           { error: 'Journal entry is required when opening a bottle' },
-          { status: 400 }
+          { status: 400 },
         )
       }
 
@@ -27,10 +25,7 @@ export async function POST(request: NextRequest) {
       })
 
       if (!bottle) {
-        return NextResponse.json(
-          { error: 'Bottle not found' },
-          { status: 404 }
-        )
+        return NextResponse.json({ error: 'Bottle not found' }, { status: 404 })
       }
 
       // Check if already opened this specific bottle (applies to everyone, including admins)
@@ -44,10 +39,7 @@ export async function POST(request: NextRequest) {
       })
 
       if (existingOpen) {
-        return NextResponse.json(
-          { error: 'Bottle already opened' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Bottle already opened' }, { status: 400 })
       }
 
       // Only enforce daily limit for non-admin users
@@ -71,13 +63,13 @@ export async function POST(request: NextRequest) {
         if (openedToday) {
           return NextResponse.json(
             { error: 'You can only open one bottle per day' },
-            { status: 400 }
+            { status: 400 },
           )
         }
       }
 
       // Use a transaction to create both journal entry and bottle open together
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Create journal entry first
         const journalEntry = await tx.journalEntry.create({
           data: {
@@ -108,10 +100,7 @@ export async function POST(request: NextRequest) {
       })
     } catch (error) {
       console.error('Bottle open error:', error)
-      return NextResponse.json(
-        { error: 'Failed to open bottle' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to open bottle' }, { status: 500 })
     }
   })
 }

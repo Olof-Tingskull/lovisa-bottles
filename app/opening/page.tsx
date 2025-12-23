@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function OpeningPage() {
   const router = useRouter()
@@ -13,7 +13,7 @@ export default function OpeningPage() {
   useEffect(() => {
     // Animate dots
     const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? '' : prev + '.')
+      setDots((prev) => (prev.length >= 3 ? '' : `${prev}.`))
     }, 500)
 
     return () => clearInterval(interval)
@@ -35,12 +35,8 @@ export default function OpeningPage() {
       <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
         <div className="text-center space-y-6">
           <div className="text-6xl mb-8 animate-pulse">🍾</div>
-          <p className="text-[#ff006e] font-mono text-lg">
-            opening bottle{dots}
-          </p>
-          <p className="text-white/40 font-mono text-sm">
-            preparing your message
-          </p>
+          <p className="text-[#ff006e] font-mono text-lg">opening bottle{dots}</p>
+          <p className="text-white/40 font-mono text-sm">preparing your message</p>
         </div>
       </div>
     )
@@ -50,9 +46,7 @@ export default function OpeningPage() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-8 px-4">
       <div className="border border-white/20 p-8 max-w-md text-center space-y-4">
-        <p className="text-white/70 font-mono text-base">
-          {message || 'no bottles available'}
-        </p>
+        <p className="text-white/70 font-mono text-base">{message || 'no bottles available'}</p>
         <button
           onClick={() => router.push('/')}
           className="mt-6 px-6 py-2 text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition font-mono"

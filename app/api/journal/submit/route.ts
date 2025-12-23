@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
+import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
+import { prisma } from '@/lib/prisma'
 
 // Submit journal and try to open a bottle
 export async function POST(request: NextRequest) {
@@ -9,10 +10,7 @@ export async function POST(request: NextRequest) {
       const { entry } = await request.json()
 
       if (!entry) {
-        return NextResponse.json(
-          { error: 'Journal entry is required' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Journal entry is required' }, { status: 400 })
       }
 
       // Check if user has already opened a bottle today (skip check for admins)
@@ -84,11 +82,10 @@ export async function POST(request: NextRequest) {
       }
 
       // Pick a random unopened bottle
-      const randomBottle =
-        unopenedBottles[Math.floor(Math.random() * unopenedBottles.length)]
+      const randomBottle = unopenedBottles[Math.floor(Math.random() * unopenedBottles.length)]
 
       // Create journal and open bottle in transaction
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Create journal entry first
         const journalEntry = await tx.journalEntry.create({
           data: {
@@ -117,10 +114,7 @@ export async function POST(request: NextRequest) {
       })
     } catch (error) {
       console.error('Journal submit error:', error)
-      return NextResponse.json(
-        { error: 'Failed to submit journal' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to submit journal' }, { status: 500 })
     }
   })
 }

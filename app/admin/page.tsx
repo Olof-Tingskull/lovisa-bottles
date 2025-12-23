@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { BottleContent, BottleBlock } from '@/lib/types'
+import type { BottleBlock, BottleContent } from '@/lib/types'
 
 interface Bottle {
   id: number
@@ -39,12 +39,6 @@ export default function AdminPage() {
     }
   }, [user, isLoading, router])
 
-  useEffect(() => {
-    if (user && token) {
-      fetchBottles()
-    }
-  }, [user, token])
-
   const fetchBottles = async () => {
     try {
       const res = await fetch('/api/admin/bottles', {
@@ -74,12 +68,21 @@ export default function AdminPage() {
     }
   }
 
+  useEffect(() => {
+    if (user && token) {
+      fetchBottles()
+    }
+  }, [user, token, fetchBottles])
+
   const addBlock = (type: BottleBlock['type']) => {
     const newBlock: BottleBlock =
-      type === 'text' ? { type: 'text', content: '' } :
-      type === 'image' ? { type: 'image', url: '', caption: '' } :
-      type === 'video' ? { type: 'video', url: '', caption: '' } :
-      { type: 'voice', url: '', duration: 0 }
+      type === 'text'
+        ? { type: 'text', content: '' }
+        : type === 'image'
+          ? { type: 'image', url: '', caption: '' }
+          : type === 'video'
+            ? { type: 'video', url: '', caption: '' }
+            : { type: 'voice', url: '', duration: 0 }
 
     setBlocks([...blocks, newBlock])
   }
@@ -89,8 +92,8 @@ export default function AdminPage() {
   }
 
   const updateBlock = (index: number, field: string, value: any) => {
-    const newBlocks = [...blocks];
-    (newBlocks[index] as any)[field] = value
+    const newBlocks = [...blocks]
+    ;(newBlocks[index] as any)[field] = value
     setBlocks(newBlocks)
   }
 
@@ -101,7 +104,7 @@ export default function AdminPage() {
 
     try {
       // Filter out empty blocks
-      const validBlocks = blocks.filter(block => {
+      const validBlocks = blocks.filter((block) => {
         if (block.type === 'text') return block.content.trim() !== ''
         if (block.type === 'image' || block.type === 'video' || block.type === 'voice') {
           return block.url.trim() !== ''
@@ -137,7 +140,7 @@ export default function AdminPage() {
         }
       }
 
-      const data = await res.json()
+      const _data = await res.json()
 
       setMessage('Bottle created successfully!')
       setBottleName('')
@@ -161,7 +164,9 @@ export default function AdminPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-8 px-4">
-        <p className="text-[#ff006e] font-mono text-center border border-[#ff006e] px-4 py-2">ERROR: {error}</p>
+        <p className="text-[#ff006e] font-mono text-center border border-[#ff006e] px-4 py-2">
+          ERROR: {error}
+        </p>
         {error.includes('restart') && (
           <div className="border border-white/20 text-white/60 px-6 py-4 max-w-md font-mono text-sm">
             <p className="mb-2">{`> fix:`}</p>
@@ -185,9 +190,7 @@ export default function AdminPage() {
       {/* Header */}
       <header className="border-b border-white/10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-lg text-[#ff006e] font-mono tracking-wider">
-            ADMIN
-          </h1>
+          <h1 className="text-lg text-[#ff006e] font-mono tracking-wider">ADMIN</h1>
           <button
             onClick={() => router.push('/')}
             className="text-white/60 hover:text-[#ff006e] transition text-sm font-mono"
@@ -204,9 +207,7 @@ export default function AdminPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm text-white/60 font-mono mb-2">
-                name:
-              </label>
+              <label className="block text-sm text-white/60 font-mono mb-2">name:</label>
               <input
                 type="text"
                 required
@@ -219,9 +220,7 @@ export default function AdminPage() {
 
             {/* Content Blocks */}
             <div className="space-y-4">
-              <label className="block text-sm text-white/60 font-mono">
-                blocks:
-              </label>
+              <label className="block text-sm text-white/60 font-mono">blocks:</label>
 
               {blocks.map((block, index) => (
                 <div key={index} className="border border-white/20 p-4 space-y-3">
@@ -268,7 +267,9 @@ export default function AdminPage() {
                         <input
                           type="number"
                           value={block.duration || 0}
-                          onChange={(e) => updateBlock(index, 'duration', parseInt(e.target.value))}
+                          onChange={(e) =>
+                            updateBlock(index, 'duration', parseInt(e.target.value, 10))
+                          }
                           className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-sm"
                           placeholder="duration (sec)..."
                         />
@@ -335,10 +336,7 @@ export default function AdminPage() {
           ) : (
             <div className="space-y-4">
               {bottles.map((bottle) => (
-                <div
-                  key={bottle.id}
-                  className="border border-white/20 p-4"
-                >
+                <div key={bottle.id} className="border border-white/20 p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="text-base text-white/80 font-mono">{bottle.name}</h3>
@@ -346,7 +344,7 @@ export default function AdminPage() {
                         {new Date(bottle.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: '2-digit',
-                          day: '2-digit'
+                          day: '2-digit',
                         })}
                       </p>
                     </div>
@@ -367,9 +365,10 @@ export default function AdminPage() {
                       <ul className="space-y-1">
                         {bottle.opens.slice(0, 3).map((open) => (
                           <li key={open.id} className="text-xs text-white/40 font-mono">
-                            {open.user.email} / {new Date(open.openedAt).toLocaleDateString('en-US', {
+                            {open.user.email} /{' '}
+                            {new Date(open.openedAt).toLocaleDateString('en-US', {
                               month: '2-digit',
-                              day: '2-digit'
+                              day: '2-digit',
                             })}
                           </li>
                         ))}
