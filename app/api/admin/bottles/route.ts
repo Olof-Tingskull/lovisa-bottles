@@ -1,5 +1,3 @@
-export const runtime = 'nodejs'
-
 import jwt from 'jsonwebtoken'
 import { type NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
