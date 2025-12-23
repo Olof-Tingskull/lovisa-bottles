@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { prisma } from '@/lib/prisma'
