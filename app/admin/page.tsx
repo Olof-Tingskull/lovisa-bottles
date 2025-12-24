@@ -31,6 +31,7 @@ export default function AdminPage() {
   const [blocks, setBlocks] = useState<BottleBlock[]>([{ type: 'text', content: '' }])
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
+  const [uploading, setUploading] = useState<number | null>(null)
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -96,6 +97,34 @@ export default function AdminPage() {
     const newBlocks = [...blocks]
     ;(newBlocks[index] as any)[field] = value
     setBlocks(newBlocks)
+  }
+
+  const handleFileUpload = async (index: number, file: File) => {
+    setUploading(index)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to upload file')
+      }
+
+      const data = await res.json()
+      updateBlock(index, 'url', data.url)
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Failed to upload file')
+    } finally {
+      setUploading(null)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -256,13 +285,51 @@ export default function AdminPage() {
 
                   {(block.type === 'image' || block.type === 'video' || block.type === 'voice') && (
                     <>
-                      <input
-                        type="url"
-                        value={block.url}
-                        onChange={(e) => updateBlock(index, 'url', e.target.value)}
-                        className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
-                        placeholder="url..."
-                      />
+                      {block.type === 'image' && (
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleFileUpload(index, file)
+                              }}
+                              className="hidden"
+                              id={`file-upload-${index}`}
+                            />
+                            <label
+                              htmlFor={`file-upload-${index}`}
+                              className="flex-1 px-3 py-2 border border-white/20 bg-black hover:border-[#ff006e] text-white/60 hover:text-[#ff006e] font-mono text-base cursor-pointer transition text-center"
+                            >
+                              {uploading === index ? 'uploading...' : '[upload image]'}
+                            </label>
+                          </div>
+                          <input
+                            type="url"
+                            value={block.url}
+                            onChange={(e) => updateBlock(index, 'url', e.target.value)}
+                            className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
+                            placeholder="or paste url..."
+                          />
+                          {block.url && (
+                            <img
+                              src={block.url}
+                              alt="preview"
+                              className="w-full h-auto max-h-48 object-contain border border-white/10"
+                            />
+                          )}
+                        </div>
+                      )}
+                      {(block.type === 'video' || block.type === 'voice') && (
+                        <input
+                          type="url"
+                          value={block.url}
+                          onChange={(e) => updateBlock(index, 'url', e.target.value)}
+                          className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
+                          placeholder="url..."
+                        />
+                      )}
                       {(block.type === 'image' || block.type === 'video') && (
                         <input
                           type="text"

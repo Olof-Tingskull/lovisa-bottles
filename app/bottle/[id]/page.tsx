@@ -4,6 +4,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import type { BottleBlock, BottleContent } from '@/lib/types'
+import BottleCover from './BottleCover'
+import BottleNav from './BottleNav'
 
 export default function BottlePage() {
   const { user, token, isLoading } = useAuth()
@@ -71,7 +73,7 @@ export default function BottlePage() {
               <img
                 src={block.url}
                 alt={block.caption || 'Image'}
-                className="w-full h-auto object-cover"
+                className="w-full h-auto max-h-[70vh] object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
                   target.src =
@@ -138,32 +140,15 @@ export default function BottlePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Minimal Header */}
-      <header className="border-b border-white/10">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
-          <button
-            onClick={() => router.push('/')}
-            className="text-white/60 hover:text-[#ff006e] transition text-xs sm:text-sm font-mono whitespace-nowrap"
-          >
-            {`< back`}
-          </button>
-          <h1 className="text-sm sm:text-lg text-[#ff006e] font-mono tracking-wider truncate px-2 sm:px-4">{bottle.name}</h1>
-          <button
-            onClick={() => router.push('/info')}
-            className="text-white/60 hover:text-[#ff006e] transition text-xs sm:text-sm font-mono whitespace-nowrap"
-          >
-            help
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
-        {/* Minimal Content */}
-        <div className="space-y-8 sm:space-y-12">
-          {bottle.content.blocks.map((block, index) => renderBlock(block, index))}
-        </div>
-      </main>
-    </div>
+    <BottleCover bottleName={bottle.name}>
+      <div className="min-h-screen bg-black">
+        <BottleNav bottleName={bottle.name} />
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
+          <div className="space-y-8 sm:space-y-12">
+            {bottle.content.blocks.map((block, index) => renderBlock(block, index))}
+          </div>
+        </main>
+      </div>
+    </BottleCover>
   )
 }

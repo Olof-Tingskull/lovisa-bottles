@@ -20,7 +20,6 @@ export default function HomePage() {
   const { user, token, logout, isLoading } = useAuth()
   const router = useRouter()
   const [entry, setEntry] = useState('')
-  const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
   const [journals, setJournals] = useState<JournalEntry[]>([])
   const [loadingJournals, setLoadingJournals] = useState(true)
@@ -89,38 +88,11 @@ export default function HomePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setMessage('')
-    setSubmitting(true)
 
-    try {
-      const res = await fetch('/api/journal/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ entry }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit journal')
-      }
-
-      // Clear form
-      setEntry('')
-
-      // Redirect to opening/result page
-      if (data.bottleId) {
-        router.push(`/opening?bottle=${data.bottleId}`)
-      } else {
-        // No bottle - show message on result page
-        router.push(`/opening?message=${encodeURIComponent(data.message)}`)
-      }
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'An error occurred')
-      setSubmitting(false)
-    }
+    // Immediately go to opening page
+    const entryText = entry
+    setEntry('')
+    router.push(`/opening?entry=${encodeURIComponent(entryText)}`)
   }
 
   if (isLoading || !user) {
@@ -193,10 +165,9 @@ export default function HomePage() {
 
             <button
               type="submit"
-              disabled={submitting}
-              className="w-full sm:w-auto py-2 px-6 text-xs sm:text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition disabled:opacity-50 font-mono"
+              className="w-full sm:w-auto py-2 px-6 text-xs sm:text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition font-mono"
             >
-              {submitting ? 'SUBMIT...' : 'SUBMIT'}
+              SUBMIT
             </button>
           </form>
         </div>

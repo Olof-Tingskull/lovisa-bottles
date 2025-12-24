@@ -1,0 +1,144 @@
+import { cookies } from 'next/headers'
+import { notFound, redirect } from 'next/navigation'
+import { verifyToken } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import type { BottleBlock, BottleContent } from '@/lib/types'
+import BottleCover from './BottleCover'
+
+interface Bottle {
+  id: number
+  name: string
+  content: BottleContent
+}
+
+async function getBottle(id: string, token: string): Promise<Bottle | null> {
+  try {
+    const user = verifyToken(token)
+    if (!user) {
+      return null
+    }
+
+    const bottle = await prisma.bottle.findUnique({
+      where: { id: parseInt(id, 10) },
+      select: {
+        id: true,
+        name: true,
+        content: true,
+      },
+    })
+
+    if (!bottle) {
+      return null
+    }
+
+    return {
+      id: bottle.id,
+      name: bottle.name,
+      content: bottle.content as unknown as BottleContent,
+    }
+  } catch (error) {
+    console.error('Error fetching bottle:', error)
+    return null
+  }
+}
+
+function renderBlock(block: BottleBlock, index: number) {
+  switch (block.type) {
+    case 'text':
+      return (
+        <div key={index}>
+          <p className="text-sm sm:text-base text-white/80 whitespace-pre-wrap leading-relaxed font-mono">
+            {block.content}
+          </p>
+        </div>
+      )
+
+    case 'image':
+      return (
+        <div key={index} className="space-y-2 sm:space-y-3">
+          <div className="relative w-full overflow-hidden border border-white/10">
+            <img
+              src={block.url}
+              alt={block.caption || 'Image'}
+              className="w-full h-auto max-h-[70vh] object-contain"
+            />
+          </div>
+          {block.caption && <p className="text-xs sm:text-sm text-white/40 font-mono">{block.caption}</p>}
+        </div>
+      )
+
+    case 'video':
+      return (
+        <div key={index} className="space-y-2 sm:space-y-3">
+          <video src={block.url} controls className="w-full border border-white/10" />
+          {block.caption && <p className="text-xs sm:text-sm text-white/40 font-mono">{block.caption}</p>}
+        </div>
+      )
+
+    case 'voice':
+      return (
+        <div key={index} className="space-y-2 sm:space-y-3">
+          <audio src={block.url} controls className="w-full" />
+          {block.duration && (
+            <p className="text-xs sm:text-sm text-white/40 font-mono">
+              [{Math.floor(block.duration / 60)}:
+              {(block.duration % 60).toString().padStart(2, '0')}]
+            </p>
+          )}
+        </div>
+      )
+
+    default:
+      return null
+  }
+}
+
+export default async function BottlePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const cookieStore = await cookies()
+  const token = cookieStore.get('token')?.value
+
+  if (!token) {
+    redirect('/login')
+  }
+
+  const bottle = await getBottle(id, token)
+
+  if (!bottle) {
+    notFound()
+  }
+
+  return (
+    <BottleCover bottleName={bottle.name}>
+      <div className="min-h-screen bg-black">
+        {/* Minimal Header */}
+        <header className="border-b border-white/10">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+            <a
+              href="/"
+              className="text-white/60 hover:text-[#ff006e] transition text-xs sm:text-sm font-mono whitespace-nowrap"
+            >
+              {`< back`}
+            </a>
+            <h1 className="text-sm sm:text-lg text-[#ff006e] font-mono tracking-wider truncate px-2 sm:px-4">
+              {bottle.name}
+            </h1>
+            <a
+              href="/info"
+              className="text-white/60 hover:text-[#ff006e] transition text-xs sm:text-sm font-mono whitespace-nowrap"
+            >
+              help
+            </a>
+          </div>
+        </header>
+
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
+          {/* Minimal Content */}
+          <div className="space-y-8 sm:space-y-12">
+            {bottle.content.blocks.map((block, index) => renderBlock(block, index))}
+          </div>
+        </main>
+      </div>
+    </BottleCover>
+  )
+}

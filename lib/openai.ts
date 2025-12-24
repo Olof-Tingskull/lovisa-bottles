@@ -65,7 +65,7 @@ export async function generateMoodFromContent(content: BottleContent): Promise<s
 
   const openai = getOpenAIClient()
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -76,8 +76,6 @@ export async function generateMoodFromContent(content: BottleContent): Promise<s
         content: `Analyze this bottle content and generate a mood description:\n\n${textContent}`,
       },
     ],
-    temperature: 0.8,
-    max_tokens: 150,
   })
 
   const mood = response.choices[0].message.content?.trim()
@@ -161,7 +159,7 @@ Think carefully about the emotional match, but output only the number.`
 export async function generateMoodQuery(journalText: string): Promise<string> {
   const openai = getOpenAIClient()
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -172,8 +170,6 @@ export async function generateMoodQuery(journalText: string): Promise<string> {
         content: `Analyze this journal entry and determine what mood Lovisa might need or want right now:\n\n${journalText}`,
       },
     ],
-    temperature: 0.7,
-    max_tokens: 150,
   })
 
   const moodQuery = response.choices[0].message.content?.trim()
@@ -201,7 +197,7 @@ export async function pickBestBottle(
 
   const openai = getOpenAIClient()
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -212,8 +208,6 @@ export async function pickBestBottle(
         content: `Journal entry:\n${journalText}\n\nAvailable bottles:\n${bottleList}\n\nWhich bottle should Lovisa open? Reply with only the number (1-${bottles.length}).`,
       },
     ],
-    temperature: 0.3,
-    max_tokens: 10,
   })
 
   const choice = response.choices[0].message.content?.trim()
