@@ -137,7 +137,7 @@ export default function HomePage() {
       <header className="border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
-            <h1 className="text-base sm:text-lg text-[#ff006e] font-mono tracking-wider">LOVISA FLASK POST</h1>
+            <h1 className="text-base sm:text-lg text-[#ff006e] font-mono tracking-wider">LOVISA FLASKPOST</h1>
             <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6">
               <span className="text-xs sm:text-sm text-white/40 font-mono truncate max-w-30 sm:max-w-none">{user.email}</span>
               <div className="flex items-center gap-2 sm:gap-4">
