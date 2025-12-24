@@ -214,7 +214,7 @@ export default function AdminPage() {
                 required
                 value={bottleName}
                 onChange={(e) => setBottleName(e.target.value)}
-                className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-xs sm:text-sm"
+                className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                 placeholder="bottle name..."
               />
             </div>
@@ -241,7 +241,7 @@ export default function AdminPage() {
                       value={block.content}
                       onChange={(e) => updateBlock(index, 'content', e.target.value)}
                       rows={4}
-                      className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-xs sm:text-sm"
+                      className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                       placeholder="text content..."
                     />
                   )}
@@ -252,7 +252,7 @@ export default function AdminPage() {
                         type="url"
                         value={block.url}
                         onChange={(e) => updateBlock(index, 'url', e.target.value)}
-                        className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-xs sm:text-sm"
+                        className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                         placeholder="url..."
                       />
                       {(block.type === 'image' || block.type === 'video') && (
@@ -260,7 +260,7 @@ export default function AdminPage() {
                           type="text"
                           value={block.caption || ''}
                           onChange={(e) => updateBlock(index, 'caption', e.target.value)}
-                          className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-xs sm:text-sm"
+                          className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                           placeholder="caption (optional)..."
                         />
                       )}
@@ -271,7 +271,7 @@ export default function AdminPage() {
                           onChange={(e) =>
                             updateBlock(index, 'duration', parseInt(e.target.value, 10))
                           }
-                          className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-xs sm:text-sm"
+                          className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                           placeholder="duration (sec)..."
                         />
                       )}
