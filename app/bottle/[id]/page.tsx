@@ -149,7 +149,12 @@ export default function BottlePage() {
             {`< back`}
           </button>
           <h1 className="text-sm sm:text-lg text-[#ff006e] font-mono tracking-wider truncate px-2 sm:px-4">{bottle.name}</h1>
-          <div className="w-12 sm:w-16"></div>
+          <button
+            onClick={() => router.push('/info')}
+            className="text-white/60 hover:text-[#ff006e] transition text-xs sm:text-sm font-mono whitespace-nowrap"
+          >
+            help
+          </button>
         </div>
       </header>
 

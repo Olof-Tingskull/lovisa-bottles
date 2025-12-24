@@ -27,7 +27,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/login')
+      router.push('/info')
     }
   }, [user, isLoading, router])
 
@@ -141,6 +141,12 @@ export default function HomePage() {
             <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6">
               <span className="text-xs sm:text-sm text-white/40 font-mono truncate max-w-30 sm:max-w-none">{user.email}</span>
               <div className="flex items-center gap-2 sm:gap-4">
+                <button
+                  onClick={() => router.push('/info')}
+                  className="text-xs sm:text-sm text-white/60 hover:text-[#ff006e] font-mono transition whitespace-nowrap"
+                >
+                  help
+                </button>
                 {user.isAdmin && (
                   <button
                     onClick={() => router.push('/admin')}

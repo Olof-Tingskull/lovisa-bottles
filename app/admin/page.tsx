@@ -192,12 +192,20 @@ export default function AdminPage() {
       <header className="border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
           <h1 className="text-base sm:text-lg text-[#ff006e] font-mono tracking-wider">ADMIN</h1>
-          <button
-            onClick={() => router.push('/')}
-            className="text-white/60 hover:text-[#ff006e] transition text-xs sm:text-sm font-mono whitespace-nowrap"
-          >
-            {`< back`}
-          </button>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={() => router.push('/info')}
+              className="text-white/60 hover:text-[#ff006e] transition text-xs sm:text-sm font-mono whitespace-nowrap"
+            >
+              help
+            </button>
+            <button
+              onClick={() => router.push('/')}
+              className="text-white/60 hover:text-[#ff006e] transition text-xs sm:text-sm font-mono whitespace-nowrap"
+            >
+              {`< back`}
+            </button>
+          </div>
         </div>
       </header>
 
