@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { prisma } from '@/lib/prisma'
+import { generateMoodQuery, generateTextEmbedding, pickBestBottle } from '@/lib/openai'
+import { Prisma } from '@prisma/client'
 
 // Submit journal and try to open a bottle
 export async function POST(request: NextRequest) {
@@ -45,7 +47,11 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Get unopened bottles
+      const moodQuery = await generateMoodQuery(entry)
+
+      const queryEmbedding = await generateTextEmbedding(moodQuery)
+      const embeddingString = `[${queryEmbedding.join(',')}]`
+
       const openedBottleIds = await prisma.bottleOpen.findMany({
         where: { userId: user.id },
         select: { bottleId: true },
@@ -53,19 +59,30 @@ export async function POST(request: NextRequest) {
 
       const openedIds = openedBottleIds.map((b) => b.bottleId)
 
-      const unopenedBottles = await prisma.bottle.findMany({
-        where: {
-          id: {
-            notIn: openedIds,
-          },
-        },
-        select: {
-          id: true,
-        },
-      })
+      let topBottles: Array<{ id: number; name: string; mood: string | null }>
 
-      if (unopenedBottles.length === 0) {
-        // No bottles left to open, just create journal
+      if (openedIds.length > 0) {
+        topBottles = await prisma.$queryRaw<Array<{ id: number; name: string; mood: string | null }>>`
+          SELECT id, name, mood
+          FROM bottles
+          WHERE id NOT IN (${Prisma.join(openedIds)})
+            AND mood_embedding IS NOT NULL
+            AND mood IS NOT NULL
+          ORDER BY mood_embedding <=> ${embeddingString}::vector
+          LIMIT 5
+        `
+      } else {
+        topBottles = await prisma.$queryRaw<Array<{ id: number; name: string; mood: string | null }>>`
+          SELECT id, name, mood
+          FROM bottles
+          WHERE mood_embedding IS NOT NULL
+            AND mood IS NOT NULL
+          ORDER BY mood_embedding <=> ${embeddingString}::vector
+          LIMIT 5
+        `
+      }
+
+      if (topBottles.length === 0) {
         const journalEntry = await prisma.journalEntry.create({
           data: {
             userId: user.id,
@@ -80,8 +97,23 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      // Pick a random unopened bottle
-      const randomBottle = unopenedBottles[Math.floor(Math.random() * unopenedBottles.length)]
+      // Step 4: AI picks the best bottle from the top 5
+      const bottlesForAI = topBottles.map((b) => ({
+        id: b.id,
+        name: b.name,
+        mood: b.mood || 'No mood description',
+      }))
+
+      const selectedBottleId = await pickBestBottle(entry, bottlesForAI)
+      console.log('AI selected bottle ID:', selectedBottleId)
+
+      // Find the selected bottle in our list
+      let finalBottle = topBottles.find((b) => b.id === selectedBottleId)
+      if (!finalBottle) {
+        // Fallback to first bottle if AI picked something invalid
+        console.error('AI picked invalid bottle, using first match')
+        finalBottle = topBottles[0]
+      }
 
       // Create journal and open bottle in transaction
       const result = await prisma.$transaction(async (tx) => {
@@ -97,7 +129,7 @@ export async function POST(request: NextRequest) {
         // Open bottle and link to journal
         const bottleOpen = await tx.bottleOpen.create({
           data: {
-            bottleId: randomBottle.id,
+            bottleId: finalBottle.id,
             userId: user.id,
             journalEntryId: journalEntry.id,
           },
@@ -108,7 +140,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         journalId: result.journalEntry.id,
-        bottleId: randomBottle.id,
+        bottleId: finalBottle.id,
         message: 'Journal created and bottle opened!',
       })
     } catch (error) {

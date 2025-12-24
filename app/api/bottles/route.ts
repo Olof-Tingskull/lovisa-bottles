@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { prisma } from '@/lib/prisma'
 import type { BottleContent } from '@/lib/types'
+import { generateMoodAndEmbedding } from '@/lib/openai'
 
 // Get bottles (admin: all bottles with opens, user: unopened bottles only)
 export async function GET(request: NextRequest) {
@@ -76,13 +77,15 @@ export async function GET(request: NextRequest) {
 
 // Create a new bottle (admin only)
 export async function POST(request: NextRequest) {
+
   return withAuth(request, async (_req, user) => {
     if (!user.isAdmin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
     try {
-      const { name, ...content }: { name: string } & BottleContent = await request.json()
+      const { name, content }: { name: string, content: BottleContent } = await request.json()
+
 
       // Basic validation
       if (!name) {
@@ -93,16 +96,30 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid bottle content' }, { status: 400 })
       }
 
+      // Generate mood and embedding using OpenAI
+      const { mood, embedding } = await generateMoodAndEmbedding(content)
+
+      // First create the bottle without embedding
       const bottle = await prisma.bottle.create({
         data: {
           name,
           content: content as any,
+          mood,
         },
       })
+
+      // Then update with the embedding using raw SQL
+      const embeddingString = `[${embedding.join(',')}]`
+      await prisma.$executeRaw`
+        UPDATE bottles
+        SET mood_embedding = ${embeddingString}::vector
+        WHERE id = ${bottle.id}
+      `
 
       return NextResponse.json({
         id: bottle.id,
         name: bottle.name,
+        mood: bottle.mood,
         createdAt: bottle.createdAt,
       })
     } catch (error) {

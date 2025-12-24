@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 
 interface JournalEntry {
@@ -31,7 +31,9 @@ export default function HomePage() {
     }
   }, [user, isLoading, router])
 
-  const fetchJournals = async () => {
+  const fetchJournals = useCallback(async () => {
+    if (!token) return
+
     try {
       const res = await fetch('/api/journal', {
         headers: {
@@ -48,13 +50,13 @@ export default function HomePage() {
     } finally {
       setLoadingJournals(false)
     }
-  }
+  }, [token])
 
   useEffect(() => {
     if (user && token) {
       fetchJournals()
     }
-  }, [user, token, fetchJournals])
+  }, [fetchJournals, user])
 
   const _handleDeleteJournal = async (journalId: number) => {
     if (

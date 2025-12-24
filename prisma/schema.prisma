@@ -5,11 +5,13 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 model User {
@@ -43,10 +45,12 @@ model JournalEntry {
 }
 
 model Bottle {
-  id        Int      @id @default(autoincrement())
-  name      String // Display name/title for the bottle
-  content   Json // All content blocks (text, images, videos, etc)
-  createdAt DateTime @default(now()) @map("created_at")
+  id             Int                        @id @default(autoincrement())
+  name           String // Display name/title for the bottle
+  content        Json // All content blocks (text, images, videos, etc)
+  mood           String? // AI-generated mood description
+  moodEmbedding  Unsupported("vector(1536)")? @map("mood_embedding") // OpenAI embedding of mood
+  createdAt      DateTime                   @default(now()) @map("created_at")
 
   opens BottleOpen[] // Track who opened it and when
 

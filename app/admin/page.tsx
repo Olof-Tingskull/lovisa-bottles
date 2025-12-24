@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import type { BottleBlock, BottleContent } from '@/lib/types'
 
@@ -38,7 +38,9 @@ export default function AdminPage() {
     }
   }, [user, isLoading, router])
 
-  const fetchBottles = async () => {
+  const fetchBottles = useCallback(async () => {
+    if (!token) return
+
     try {
       const res = await fetch('/api/admin/bottles', {
         headers: {
@@ -65,13 +67,13 @@ export default function AdminPage() {
     } finally {
       setLoadingBottles(false)
     }
-  }
+  }, [token])
 
   useEffect(() => {
     if (user && token) {
       fetchBottles()
     }
-  }, [user, token, fetchBottles])
+  }, [fetchBottles, user])
 
   const addBlock = (type: BottleBlock['type']) => {
     const newBlock: BottleBlock =
@@ -115,7 +117,7 @@ export default function AdminPage() {
         throw new Error('Please add at least one block with content')
       }
 
-      const res = await fetch('/api/admin/bottles', {
+      const res = await fetch('/api/bottles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
