@@ -24,4 +24,27 @@ body {
   color: #ffffff;
   font-family: 'Courier New', monospace;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  html {
+    font-size: 16px; /* Prevent iOS text size adjustment */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Ensure buttons and inputs are easily tappable on mobile */
+  button,
+  input,
+  textarea,
+  select {
+    min-height: 44px; /* iOS recommended tap target size */
+  }
+
+  /* Better touch scrolling on iOS */
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
 }

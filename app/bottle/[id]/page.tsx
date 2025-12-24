@@ -58,7 +58,7 @@ export default function BottlePage() {
       case 'text':
         return (
           <div key={index}>
-            <p className="text-base text-white/80 whitespace-pre-wrap leading-relaxed font-mono">
+            <p className="text-sm sm:text-base text-white/80 whitespace-pre-wrap leading-relaxed font-mono">
               {block.content}
             </p>
           </div>
@@ -66,7 +66,7 @@ export default function BottlePage() {
 
       case 'image':
         return (
-          <div key={index} className="space-y-3">
+          <div key={index} className="space-y-2 sm:space-y-3">
             <div className="relative w-full overflow-hidden border border-white/10">
               <img
                 src={block.url}
@@ -79,24 +79,24 @@ export default function BottlePage() {
                 }}
               />
             </div>
-            {block.caption && <p className="text-sm text-white/40 font-mono">{block.caption}</p>}
+            {block.caption && <p className="text-xs sm:text-sm text-white/40 font-mono">{block.caption}</p>}
           </div>
         )
 
       case 'video':
         return (
-          <div key={index} className="space-y-3">
+          <div key={index} className="space-y-2 sm:space-y-3">
             <video src={block.url} controls className="w-full border border-white/10" />
-            {block.caption && <p className="text-sm text-white/40 font-mono">{block.caption}</p>}
+            {block.caption && <p className="text-xs sm:text-sm text-white/40 font-mono">{block.caption}</p>}
           </div>
         )
 
       case 'voice':
         return (
-          <div key={index} className="space-y-3">
+          <div key={index} className="space-y-2 sm:space-y-3">
             <audio src={block.url} controls className="w-full" />
             {block.duration && (
-              <p className="text-sm text-white/40 font-mono">
+              <p className="text-xs sm:text-sm text-white/40 font-mono">
                 [{Math.floor(block.duration / 60)}:
                 {(block.duration % 60).toString().padStart(2, '0')}]
               </p>
@@ -141,21 +141,21 @@ export default function BottlePage() {
     <div className="min-h-screen bg-black">
       {/* Minimal Header */}
       <header className="border-b border-white/10">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
           <button
             onClick={() => router.push('/')}
-            className="text-white/60 hover:text-[#ff006e] transition text-sm font-mono"
+            className="text-white/60 hover:text-[#ff006e] transition text-xs sm:text-sm font-mono whitespace-nowrap"
           >
             {`< back`}
           </button>
-          <h1 className="text-lg text-[#ff006e] font-mono tracking-wider">{bottle.name}</h1>
-          <div className="w-16"></div>
+          <h1 className="text-sm sm:text-lg text-[#ff006e] font-mono tracking-wider truncate px-2 sm:px-4">{bottle.name}</h1>
+          <div className="w-12 sm:w-16"></div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-16">
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
         {/* Minimal Content */}
-        <div className="space-y-12">
+        <div className="space-y-8 sm:space-y-12">
           {bottle.content.blocks.map((block, index) => renderBlock(block, index))}
         </div>
       </main>

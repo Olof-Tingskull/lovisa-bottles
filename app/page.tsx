@@ -135,34 +135,38 @@ export default function HomePage() {
     <div className="min-h-screen bg-black">
       {/* Header */}
       <header className="border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-lg text-[#ff006e] font-mono tracking-wider">BOTTLES</h1>
-          <div className="flex items-center gap-6">
-            <span className="text-sm text-white/40 font-mono">{user.email}</span>
-            {user.isAdmin && (
-              <button
-                onClick={() => router.push('/admin')}
-                className="text-sm text-white/60 hover:text-[#ff006e] font-mono transition"
-              >
-                [admin]
-              </button>
-            )}
-            <button
-              onClick={logout}
-              className="text-sm text-white/60 hover:text-[#ff006e] font-mono transition"
-            >
-              exit
-            </button>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+            <h1 className="text-base sm:text-lg text-[#ff006e] font-mono tracking-wider">BOTTLES</h1>
+            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6">
+              <span className="text-xs sm:text-sm text-white/40 font-mono truncate max-w-30 sm:max-w-none">{user.email}</span>
+              <div className="flex items-center gap-2 sm:gap-4">
+                {user.isAdmin && (
+                  <button
+                    onClick={() => router.push('/admin')}
+                    className="text-xs sm:text-sm text-white/60 hover:text-[#ff006e] font-mono transition whitespace-nowrap"
+                  >
+                    [admin]
+                  </button>
+                )}
+                <button
+                  onClick={logout}
+                  className="text-xs sm:text-sm text-white/60 hover:text-[#ff006e] font-mono transition whitespace-nowrap"
+                >
+                  exit
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-12">
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Journal Form */}
-        <div className="mb-16">
-          <h2 className="text-base text-white/70 font-mono mb-6">{`> NEW_ENTRY`}</h2>
+        <div className="mb-12 sm:mb-16">
+          <h2 className="text-sm sm:text-base text-white/70 font-mono mb-4 sm:mb-6">{`> NEW_ENTRY`}</h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div>
               <textarea
                 id="entry"
@@ -170,13 +174,13 @@ export default function HomePage() {
                 value={entry}
                 onChange={(e) => setEntry(e.target.value)}
                 rows={6}
-                className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-sm resize-none"
+                className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-xs sm:text-sm resize-none"
                 placeholder="write your entry..."
               />
             </div>
 
             {message && (
-              <div className="text-[#ff006e] text-sm font-mono border border-[#ff006e] px-3 py-2">
+              <div className="text-[#ff006e] text-xs sm:text-sm font-mono border border-[#ff006e] px-3 py-2">
                 {message}
               </div>
             )}
@@ -184,7 +188,7 @@ export default function HomePage() {
             <button
               type="submit"
               disabled={submitting}
-              className="py-2 px-6 text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition disabled:opacity-50 font-mono"
+              className="w-full sm:w-auto py-2 px-6 text-xs sm:text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition disabled:opacity-50 font-mono"
             >
               {submitting ? 'SUBMIT...' : 'SUBMIT'}
             </button>
@@ -193,17 +197,17 @@ export default function HomePage() {
 
         {/* Journal History */}
         <div>
-          <h2 className="text-base text-white/70 font-mono mb-6">{`> HISTORY`}</h2>
+          <h2 className="text-sm sm:text-base text-white/70 font-mono mb-4 sm:mb-6">{`> HISTORY`}</h2>
 
           {loadingJournals ? (
-            <p className="text-white/40 font-mono">loading...</p>
+            <p className="text-white/40 font-mono text-xs sm:text-sm">loading...</p>
           ) : journals.length === 0 ? (
-            <p className="text-white/40 font-mono">no entries found.</p>
+            <p className="text-white/40 font-mono text-xs sm:text-sm">no entries found.</p>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {journals.map((journal) => (
-                <div key={journal.id} className="border border-white/10 p-4 bg-black/50">
-                  <div className="flex justify-between items-start mb-3">
+                <div key={journal.id} className="border border-white/10 p-3 sm:p-4 bg-black/50">
+                  <div className="flex justify-between items-start mb-2 sm:mb-3">
                     <p className="text-xs text-white/40 font-mono">
                       {new Date(journal.date).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -219,8 +223,8 @@ export default function HomePage() {
                       [delete]
                     </button>*/}
                   </div>
-                  <div className="mb-3">
-                    <p className="text-sm text-white/80 whitespace-pre-wrap leading-relaxed font-mono">
+                  <div className="mb-2 sm:mb-3">
+                    <p className="text-xs sm:text-sm text-white/80 whitespace-pre-wrap leading-relaxed font-mono">
                       {journal.entry}
                     </p>
                   </div>

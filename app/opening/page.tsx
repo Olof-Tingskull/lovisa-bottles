@@ -33,10 +33,10 @@ function OpeningContent() {
   if (bottleId) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
-        <div className="text-center space-y-6">
-          <div className="text-6xl mb-8 animate-pulse">🍾</div>
-          <p className="text-[#ff006e] font-mono text-lg">opening bottle{dots}</p>
-          <p className="text-white/40 font-mono text-sm">preparing your message</p>
+        <div className="text-center space-y-4 sm:space-y-6">
+          <div className="text-5xl sm:text-6xl mb-6 sm:mb-8 animate-pulse">🍾</div>
+          <p className="text-[#ff006e] font-mono text-base sm:text-lg">opening bottle{dots}</p>
+          <p className="text-white/40 font-mono text-xs sm:text-sm">preparing your message</p>
         </div>
       </div>
     )
@@ -44,12 +44,12 @@ function OpeningContent() {
 
   // No bottle found - show message
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-8 px-4">
-      <div className="border border-white/20 p-8 max-w-md text-center space-y-4">
-        <p className="text-white/70 font-mono text-base">{message || 'no bottles available'}</p>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 sm:gap-8 px-4">
+      <div className="border border-white/20 p-6 sm:p-8 max-w-md w-full text-center space-y-3 sm:space-y-4">
+        <p className="text-white/70 font-mono text-sm sm:text-base">{message || 'no bottles available'}</p>
         <button
           onClick={() => router.push('/')}
-          className="mt-6 px-6 py-2 text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition font-mono"
+          className="mt-4 sm:mt-6 w-full sm:w-auto px-6 py-2 text-xs sm:text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition font-mono"
         >
           BACK
         </button>
@@ -63,9 +63,9 @@ export default function OpeningPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
-          <div className="text-center space-y-6">
-            <div className="text-6xl mb-8 animate-pulse">🍾</div>
-            <p className="text-[#ff006e] font-mono text-lg">loading...</p>
+          <div className="text-center space-y-4 sm:space-y-6">
+            <div className="text-5xl sm:text-6xl mb-6 sm:mb-8 animate-pulse">🍾</div>
+            <p className="text-[#ff006e] font-mono text-base sm:text-lg">loading...</p>
           </div>
         </div>
       }
