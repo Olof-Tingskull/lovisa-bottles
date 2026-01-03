@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { withValidation } from '@/lib/middleware'
-import { hashPassword } from '@/lib/auth'
+import { hashPassword, generateToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { setupSchema } from '@/lib/schemas'
 
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
       // Create the user with hashed password
       const passwordHash = await hashPassword(data.password)
-      await prisma.user.create({
+      const user = await prisma.user.create({
         data: {
           email: data.email,
           passwordHash,
@@ -26,7 +26,24 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      return NextResponse.json({ success: true })
+      // Generate JWT token and set cookie for auto-login
+      const token = generateToken(user.id, user.email, user.isAdmin)
+
+      const response = NextResponse.json({
+        success: true,
+        isAdmin: user.isAdmin,
+        email: user.email,
+      })
+
+      response.cookies.set('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+      })
+
+      return response
     } catch (error) {
       console.error('Setup error:', error)
       return NextResponse.json({ error: 'Failed to set up account' }, { status: 500 })

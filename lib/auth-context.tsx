@@ -9,9 +9,8 @@ interface User {
 
 interface AuthContextType {
   user: User | null
-  token: string | null
   login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
   isLoading: boolean
 }
 
@@ -19,19 +18,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for stored token on mount
-    const storedToken = localStorage.getItem('token')
-    const storedUser = localStorage.getItem('user')
+    // Check if user is authenticated by fetching their profile
+    // The cookie will be sent automatically
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/me', {
+          credentials: 'include',
+        })
 
-    if (storedToken && storedUser) {
-      setToken(storedToken)
-      setUser(JSON.parse(storedUser))
+        if (res.ok) {
+          const data = await res.json()
+          setUser({ email: data.email, isAdmin: data.isAdmin })
+        }
+      } catch (error) {
+        // User is not authenticated
+        console.error('Auth check failed:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-    setIsLoading(false)
+
+    checkAuth()
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
@@ -39,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
+      credentials: 'include', // Important: include cookies
     })
 
     if (!res.ok) {
@@ -47,25 +58,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const data = await res.json()
-    const userData = { email: data.email, isAdmin: data.isAdmin }
-
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify(userData))
-
-    setToken(data.token)
-    setUser(userData)
+    setUser({ email: data.email, isAdmin: data.isAdmin })
   }, [])
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    setToken(null)
+  const logout = useCallback(async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      })
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
     setUser(null)
   }, [])
 
   const value = useMemo(
-    () => ({ user, token, login, logout, isLoading }),
-    [user, token, login, logout, isLoading]
+    () => ({ user, login, logout, isLoading }),
+    [user, login, logout, isLoading]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

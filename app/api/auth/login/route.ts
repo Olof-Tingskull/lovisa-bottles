@@ -26,11 +26,21 @@ export async function POST(request: NextRequest) {
       // Generate JWT token with user info
       const token = generateToken(user.id, user.email, user.isAdmin)
 
-      return NextResponse.json({
-        token,
+      const response = NextResponse.json({
         isAdmin: user.isAdmin,
         email: user.email,
       })
+
+      // Set HTTP-only cookie
+      response.cookies.set('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+      })
+
+      return response
     } catch (error) {
       console.error('Login error:', error)
       return NextResponse.json({ error: 'Login failed' }, { status: 500 })

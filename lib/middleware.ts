@@ -12,13 +12,13 @@ export async function withAuth(
   request: NextRequest,
   handler: (request: NextRequest, user: AuthenticatedUser) => Promise<NextResponse>,
 ): Promise<NextResponse> {
-  const authHeader = request.headers.get('authorization')
+  // Read token from HTTP-only cookie
+  const token = request.cookies.get('token')?.value
 
-  if (!authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Missing or invalid authorization header' }, { status: 401 })
+  if (!token) {
+    return NextResponse.json({ error: 'Missing authentication token' }, { status: 401 })
   }
 
-  const token = authHeader.substring(7)
   const payload = verifyToken(token)
 
   if (!payload) {

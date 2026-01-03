@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
     const filename = `bottles/${Date.now()}-${file.name}`
     const blob = await put(filename, file, {
       access: 'public',
+      cacheControlMaxAge: 60,
     })
 
     return NextResponse.json({ url: blob.url })

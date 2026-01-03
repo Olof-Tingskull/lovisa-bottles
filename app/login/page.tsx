@@ -29,6 +29,7 @@ export default function LoginPage() {
         const res = await fetch('/api/auth/setup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ email, password }),
         })
 
@@ -37,8 +38,7 @@ export default function LoginPage() {
           throw new Error(data.error || 'Signup failed')
         }
 
-        // Auto-login after signup
-        await login(email, password)
+        // Cookie is already set by the server, navigate to home
         router.push('/')
       } else {
         await login(email, password)

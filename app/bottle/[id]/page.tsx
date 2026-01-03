@@ -8,7 +8,7 @@ import BottleCover from './BottleCover'
 import BottleNav from './BottleNav'
 
 export default function BottlePage() {
-  const { user, token, isLoading } = useAuth()
+  const { user, isLoading } = useAuth()
   const router = useRouter()
   const params = useParams()
   const bottleId = params.id as string
@@ -24,9 +24,7 @@ export default function BottlePage() {
   const fetchBottle = useCallback(async () => {
     try {
       const res = await fetch(`/api/bottles/${bottleId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       if (!res.ok) {
@@ -41,7 +39,7 @@ export default function BottlePage() {
     } finally {
       setLoading(false)
     }
-  }, [bottleId, token])
+  }, [bottleId])
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -50,10 +48,10 @@ export default function BottlePage() {
   }, [user, isLoading, router])
 
   useEffect(() => {
-    if (user && token) {
+    if (user) {
       fetchBottle()
     }
-  }, [user, token, fetchBottle])
+  }, [user, fetchBottle])
 
   const renderBlock = (block: BottleBlock, index: number) => {
     switch (block.type) {
@@ -111,15 +109,6 @@ export default function BottlePage() {
     }
   }
 
-  // Handle auth loading - don't show anything yet
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <p className="text-white/50 font-mono">loading...</p>
-      </div>
-    )
-  }
-
   if (error) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-8 px-4">
@@ -136,25 +125,17 @@ export default function BottlePage() {
     )
   }
 
-  // If no bottle data yet, show a minimal loading state
-  if (!bottle) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <p className="text-white/50 font-mono">loading...</p>
-      </div>
-    )
-  }
 
   return (
-    <BottleCover bottleName={bottle.name} isLoading={loading}>
-      <div className="min-h-screen bg-black">
+    <BottleCover bottleName={bottle?.name} isLoading={loading}>
+{bottle &&       <div className="min-h-screen bg-black">
         <BottleNav bottleName={bottle.name} />
         <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
           <div className="space-y-8 sm:space-y-12">
-            {bottle.content.blocks.map((block, index) => renderBlock(block, index))}
+            {bottle && bottle.content.blocks.map((block, index) => renderBlock(block, index))}
           </div>
         </main>
-      </div>
+      </div>}
     </BottleCover>
   )
 }

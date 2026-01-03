@@ -17,7 +17,7 @@ interface JournalEntry {
 }
 
 export default function HomePage() {
-  const { user, token, logout, isLoading } = useAuth()
+  const { user, logout, isLoading } = useAuth()
   const router = useRouter()
   const [entry, setEntry] = useState('')
   const [message, setMessage] = useState('')
@@ -44,13 +44,9 @@ export default function HomePage() {
   }, [submitting])
 
   const fetchJournals = useCallback(async () => {
-    if (!token) return
-
     try {
       const res = await fetch('/api/journal', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       if (res.ok) {
@@ -62,10 +58,10 @@ export default function HomePage() {
     } finally {
       setLoadingJournals(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
-    if (user && token) {
+    if (user) {
       fetchJournals()
     }
   }, [fetchJournals, user])
@@ -74,8 +70,6 @@ export default function HomePage() {
     e.preventDefault()
     setMessage('')
 
-    if (!token) return
-
     setSubmitting(true)
 
     try {
@@ -83,8 +77,8 @@ export default function HomePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ entry }),
       })
 

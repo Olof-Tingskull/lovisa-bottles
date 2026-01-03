@@ -26,7 +26,7 @@ interface User {
 }
 
 export default function AdminPage() {
-  const { user, token, isLoading } = useAuth()
+  const { user, isLoading } = useAuth()
   const router = useRouter()
   const [bottles, setBottles] = useState<Bottle[]>([])
   const [loadingBottles, setLoadingBottles] = useState(true)
@@ -49,13 +49,9 @@ export default function AdminPage() {
   }, [user, isLoading, router])
 
   const fetchBottles = useCallback(async () => {
-    if (!token) return
-
     try {
       const res = await fetch('/api/admin/bottles', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       if (!res.ok) {
@@ -77,16 +73,12 @@ export default function AdminPage() {
     } finally {
       setLoadingBottles(false)
     }
-  }, [token])
+  }, [])
 
   const fetchUsers = useCallback(async () => {
-    if (!token) return
-
     try {
       const res = await fetch('/api/users', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       if (!res.ok) {
@@ -101,14 +93,14 @@ export default function AdminPage() {
     } finally {
       setLoadingUsers(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
-    if (user && token) {
+    if (user) {
       fetchBottles()
       fetchUsers()
     }
-  }, [fetchBottles, fetchUsers, user, token])
+  }, [fetchBottles, fetchUsers, user])
 
   const addBlock = (type: BottleBlock['type']) => {
     const newBlock: BottleBlock =
@@ -141,9 +133,7 @@ export default function AdminPage() {
 
       const res = await fetch('/api/upload', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
         body: formData,
       })
 
@@ -188,8 +178,8 @@ export default function AdminPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           name: bottleName,
           content: { blocks: validBlocks },
