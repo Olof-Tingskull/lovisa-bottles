@@ -27,6 +27,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Bottle not found' }, { status: 404 })
       }
 
+      // Check if user is assigned viewer (non-admins only)
+      if (!user.isAdmin && bottle.assignedViewerId !== user.id) {
+        return NextResponse.json(
+          { error: 'You are not authorized to open this bottle' },
+          { status: 403 },
+        )
+      }
+
       // Check if already opened this specific bottle (applies to everyone, including admins)
       const existingOpen = await prisma.bottleOpen.findUnique({
         where: {

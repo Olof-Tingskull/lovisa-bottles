@@ -111,7 +111,8 @@ export default function BottlePage() {
     }
   }
 
-  if (isLoading || loading) {
+  // Handle auth loading - don't show anything yet
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <p className="text-white/50 font-mono">loading...</p>
@@ -135,12 +136,17 @@ export default function BottlePage() {
     )
   }
 
+  // If no bottle data yet, show a minimal loading state
   if (!bottle) {
-    return null
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="text-white/50 font-mono">loading...</p>
+      </div>
+    )
   }
 
   return (
-    <BottleCover bottleName={bottle.name}>
+    <BottleCover bottleName={bottle.name} isLoading={loading}>
       <div className="min-h-screen bg-black">
         <BottleNav bottleName={bottle.name} />
         <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-16">

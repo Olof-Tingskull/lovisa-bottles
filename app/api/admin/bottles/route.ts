@@ -73,13 +73,26 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { name, content } = body as { name: string; content: BottleContent }
+    const { name, content, assignedViewerId } = body as { name: string; content: BottleContent; assignedViewerId: number }
 
     if (!name || !content || !content.blocks || content.blocks.length === 0) {
       return NextResponse.json(
         { error: 'Name and content with at least one block are required' },
         { status: 400 },
       )
+    }
+
+    if (!assignedViewerId) {
+      return NextResponse.json({ error: 'Assigned viewer is required' }, { status: 400 })
+    }
+
+    // Verify the assigned viewer exists
+    const assignedUser = await prisma.user.findUnique({
+      where: { id: assignedViewerId },
+    })
+
+    if (!assignedUser) {
+      return NextResponse.json({ error: 'Assigned viewer not found' }, { status: 404 })
     }
 
     // Validate content structure
@@ -104,6 +117,7 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         content: content as any,
+        assignedViewerId,
       },
     })
 

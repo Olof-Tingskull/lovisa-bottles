@@ -19,6 +19,12 @@ interface Bottle {
   }[]
 }
 
+interface User {
+  id: number
+  email: string
+  isAdmin: boolean
+}
+
 export default function AdminPage() {
   const { user, token, isLoading } = useAuth()
   const router = useRouter()
@@ -32,6 +38,9 @@ export default function AdminPage() {
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
   const [uploading, setUploading] = useState<number | null>(null)
+  const [assignedViewerId, setAssignedViewerId] = useState<number | null>(null)
+  const [users, setUsers] = useState<User[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(true)
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -70,11 +79,36 @@ export default function AdminPage() {
     }
   }, [token])
 
+  const fetchUsers = useCallback(async () => {
+    if (!token) return
+
+    try {
+      const res = await fetch('/api/users', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to fetch users')
+      }
+
+      const data = await res.json()
+      setUsers(data.users)
+    } catch (err) {
+      console.error('Failed to fetch users:', err)
+    } finally {
+      setLoadingUsers(false)
+    }
+  }, [token])
+
   useEffect(() => {
     if (user && token) {
       fetchBottles()
+      fetchUsers()
     }
-  }, [fetchBottles, user])
+  }, [fetchBottles, fetchUsers, user, token])
 
   const addBlock = (type: BottleBlock['type']) => {
     const newBlock: BottleBlock =
@@ -146,6 +180,10 @@ export default function AdminPage() {
         throw new Error('Please add at least one block with content')
       }
 
+      if (!assignedViewerId) {
+        throw new Error('Please select an assigned viewer')
+      }
+
       const res = await fetch('/api/bottles', {
         method: 'POST',
         headers: {
@@ -155,6 +193,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           name: bottleName,
           content: { blocks: validBlocks },
+          assignedViewerId,
         }),
       })
 
@@ -170,11 +209,12 @@ export default function AdminPage() {
         }
       }
 
-      const _data = await res.json()
+      await res.json()
 
       setMessage('Bottle created successfully!')
       setBottleName('')
       setBlocks([{ type: 'text', content: '' }])
+      setAssignedViewerId(null)
       fetchBottles()
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'An error occurred')
@@ -183,7 +223,7 @@ export default function AdminPage() {
     }
   }
 
-  if (isLoading || loadingBottles) {
+  if (isLoading || loadingBottles || loadingUsers) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <p className="text-white/50 font-mono">loading...</p>
@@ -254,6 +294,23 @@ export default function AdminPage() {
                 className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                 placeholder="bottle name..."
               />
+            </div>
+
+            <div>
+              <label className="block text-xs sm:text-sm text-white/60 font-mono mb-2">assigned viewer:</label>
+              <select
+                required
+                value={assignedViewerId || ''}
+                onChange={(e) => setAssignedViewerId(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
+              >
+                <option value="" disabled>select user...</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.email} {u.isAdmin ? '(admin)' : ''}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Content Blocks */}

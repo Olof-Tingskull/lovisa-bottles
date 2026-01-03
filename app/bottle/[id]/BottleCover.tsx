@@ -4,17 +4,30 @@ import { useState } from 'react'
 
 export default function BottleCover({
   bottleName,
+  isLoading,
   children,
 }: {
   bottleName: string
+  isLoading: boolean
   children: React.ReactNode
 }) {
   const [showBottle, setShowBottle] = useState(false)
 
+  // If user clicked SHOW but content is still loading, show loading screen
+  if (showBottle && isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="text-white/50 font-mono">loading...</p>
+      </div>
+    )
+  }
+
+  // If content is loaded and user clicked SHOW, reveal the bottle
   if (showBottle) {
     return <>{children}</>
   }
 
+  // Show the cover with bottle name and SHOW button (acts as loading screen while fetching)
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
       <div className="text-center space-y-6 sm:space-y-8 max-w-md">

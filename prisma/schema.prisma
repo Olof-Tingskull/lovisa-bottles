@@ -21,8 +21,9 @@ model User {
   isAdmin      Boolean  @default(false) @map("is_admin")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  journals    JournalEntry[]
-  bottleOpens BottleOpen[]
+  journals        JournalEntry[]
+  bottleOpens     BottleOpen[]
+  assignedBottles Bottle[]       @relation("AssignedBottles")
 
   @@map("users")
 }
@@ -45,14 +46,16 @@ model JournalEntry {
 }
 
 model Bottle {
-  id             Int                        @id @default(autoincrement())
-  name           String // Display name/title for the bottle
-  content        Json // All content blocks (text, images, videos, etc)
-  mood           String? // AI-generated mood description
-  moodEmbedding  Unsupported("vector(1536)")? @map("mood_embedding") // OpenAI embedding of mood
-  createdAt      DateTime                   @default(now()) @map("created_at")
+  id              Int                        @id @default(autoincrement())
+  name            String // Display name/title for the bottle
+  content         Json // All content blocks (text, images, videos, etc)
+  mood            String? // AI-generated mood description
+  moodEmbedding   Unsupported("vector(1536)")? @map("mood_embedding") // OpenAI embedding of mood
+  assignedViewerId Int                       @map("assigned_viewer_id") // User who can view this bottle
+  createdAt       DateTime                   @default(now()) @map("created_at")
 
-  opens BottleOpen[] // Track who opened it and when
+  opens          BottleOpen[] // Track who opened it and when
+  assignedViewer User         @relation("AssignedBottles", fields: [assignedViewerId], references: [id], onDelete: Cascade)
 
   @@map("bottles")
 }

@@ -10,7 +10,6 @@ function OpeningContent() {
   const { token } = useAuth()
   const entry = searchParams.get('entry')
   const [dots, setDots] = useState('')
-  const [bottleId, setBottleId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(!!entry)
 
@@ -44,7 +43,8 @@ function OpeningContent() {
           }
 
           if (data.bottleId) {
-            setBottleId(data.bottleId.toString())
+            // Automatically redirect to the bottle page
+            router.push(`/bottle/${data.bottleId}`)
           } else {
             setError(data.message || 'no bottles available')
           }
@@ -57,10 +57,10 @@ function OpeningContent() {
 
       submit()
     }
-  }, [entry, token, submitting])
+  }, [entry, token, submitting, router])
 
-  // Show opening animation while submitting or if we have a bottle
-  if (submitting || bottleId) {
+  // Show opening animation while submitting
+  if (submitting) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
         <div className="text-center space-y-4 sm:space-y-6">
@@ -68,14 +68,6 @@ function OpeningContent() {
           <p className="text-[#ff006e] font-mono text-base sm:text-lg">opening bottle{dots}</p>
           <p className="text-white/40 font-mono text-xs sm:text-sm">preparing your message</p>
         </div>
-        {bottleId && (
-          <button
-            onClick={() => router.push(`/bottle/${bottleId}`)}
-            className="mt-8 px-8 py-3 text-sm sm:text-base text-black bg-[#ff006e] hover:bg-[#ff0080] transition font-mono"
-          >
-            SHOW
-          </button>
-        )}
       </div>
     )
   }

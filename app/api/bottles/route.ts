@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import type { BottleContent } from '@/lib/types'
 import { generateMoodAndEmbedding } from '@/lib/openai'
 
-// Get bottles (admin: all bottles with opens, user: unopened bottles only)
+// Get bottles (admin: all bottles with opens, user: assigned unopened bottles only)
 export async function GET(request: NextRequest) {
   return withAuth(request, async (_req, user) => {
     try {
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
           bottles,
         })
       } else {
-        // Regular users only see their unopened bottles
+        // Regular users only see their assigned unopened bottles
         const openedBottleIds = await prisma.bottleOpen.findMany({
           where: {
             userId: user.id,
@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
 
         const unopenedBottles = await prisma.bottle.findMany({
           where: {
+            assignedViewerId: user.id,
             id: {
               notIn: openedIds,
             },
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const { name, content }: { name: string, content: BottleContent } = await request.json()
+      const { name, content, assignedViewerId }: { name: string, content: BottleContent, assignedViewerId: number } = await request.json()
 
 
       // Basic validation
@@ -96,6 +97,19 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid bottle content' }, { status: 400 })
       }
 
+      if (!assignedViewerId) {
+        return NextResponse.json({ error: 'Assigned viewer is required' }, { status: 400 })
+      }
+
+      // Verify the assigned viewer exists
+      const assignedUser = await prisma.user.findUnique({
+        where: { id: assignedViewerId },
+      })
+
+      if (!assignedUser) {
+        return NextResponse.json({ error: 'Assigned viewer not found' }, { status: 404 })
+      }
+
       // Generate mood and embedding using OpenAI
       const { mood, embedding } = await generateMoodAndEmbedding(content)
 
@@ -105,6 +119,7 @@ export async function POST(request: NextRequest) {
           name,
           content: content as any,
           mood,
+          assignedViewerId,
         },
       })
 
