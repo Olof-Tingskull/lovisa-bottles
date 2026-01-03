@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Journal entry is required' }, { status: 400 })
       }
 
-      // Check if user has already opened a bottle today (skip check for admins)
+
       if (!user.isAdmin) {
         const today = new Date()
         today.setHours(0, 0, 0, 0)

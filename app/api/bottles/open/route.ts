@@ -1,26 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { withAuth } from '@/lib/middleware'
+import { withValidatedAuth } from '@/lib/middleware'
 import { prisma } from '@/lib/prisma'
+import { openBottleSchema } from '@/lib/schemas'
 
 export async function POST(request: NextRequest) {
-  return withAuth(request, async (req, user) => {
+  return withValidatedAuth(request, openBottleSchema, async (_req, user, data) => {
     try {
-      const { bottleId, entry } = await req.json()
-
-      if (!bottleId) {
-        return NextResponse.json({ error: 'Bottle ID is required' }, { status: 400 })
-      }
-
-      if (!entry) {
-        return NextResponse.json(
-          { error: 'Journal entry is required when opening a bottle' },
-          { status: 400 },
-        )
-      }
-
       // Check if bottle exists
       const bottle = await prisma.bottle.findUnique({
-        where: { id: bottleId },
+        where: { id: data.bottleId },
       })
 
       if (!bottle) {
@@ -39,7 +27,7 @@ export async function POST(request: NextRequest) {
       const existingOpen = await prisma.bottleOpen.findUnique({
         where: {
           bottleId_userId: {
-            bottleId,
+            bottleId: data.bottleId,
             userId: user.id,
           },
         },
@@ -80,14 +68,14 @@ export async function POST(request: NextRequest) {
           data: {
             userId: user.id,
             date: new Date(),
-            entry,
+            entry: data.entry,
           },
         })
 
         // Create bottle open record
         const bottleOpen = await tx.bottleOpen.create({
           data: {
-            bottleId,
+            bottleId: data.bottleId,
             userId: user.id,
             journalEntryId: journalEntry.id,
           },

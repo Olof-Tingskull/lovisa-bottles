@@ -23,12 +23,25 @@ export default function HomePage() {
   const [message, setMessage] = useState('')
   const [journals, setJournals] = useState<JournalEntry[]>([])
   const [loadingJournals, setLoadingJournals] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [dots, setDots] = useState('')
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/info')
     }
   }, [user, isLoading, router])
+
+  // Animated dots for opening screen
+  useEffect(() => {
+    if (!submitting) return
+
+    const interval = setInterval(() => {
+      setDots((prev) => (prev.length >= 3 ? '' : `${prev}.`))
+    }, 500)
+
+    return () => clearInterval(interval)
+  }, [submitting])
 
   const fetchJournals = useCallback(async () => {
     if (!token) return
@@ -57,48 +70,63 @@ export default function HomePage() {
     }
   }, [fetchJournals, user])
 
-  const _handleDeleteJournal = async (journalId: number) => {
-    if (
-      !confirm('Are you sure you want to delete this journal entry? This action cannot be undone.')
-    ) {
-      return
-    }
-
-    try {
-      const res = await fetch(`/api/journal?id=${journalId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to delete journal')
-      }
-
-      // Refresh the journal list
-      fetchJournals()
-      setMessage('Journal entry deleted successfully')
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Failed to delete journal')
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setMessage('')
 
-    // Immediately go to opening page
-    const entryText = entry
+    if (!token) return
+
+    setSubmitting(true)
+
+    try {
+      const res = await fetch('/api/journal/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ entry }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit journal')
+      }
+
+      if (data.bottleId) {
+        // Automatically redirect to the bottle page
+        router.push(`/bottle/${data.bottleId}`)
+      } else {
+        // No bottle available
+        setMessage(data.message || 'no bottles available')
+        setSubmitting(false)
+      }
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'An error occurred')
+      setSubmitting(false)
+    }
+
     setEntry('')
-    router.push(`/opening?entry=${encodeURIComponent(entryText)}`)
   }
 
   if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <p className="text-white/50 font-mono">loading...</p>
+      </div>
+    )
+  }
+
+  // Show opening animation while submitting
+  if (submitting) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
+        <div className="text-center space-y-4 sm:space-y-6">
+          <div className="text-5xl sm:text-6xl mb-6 sm:mb-8 animate-pulse">🍾</div>
+          <p className="text-[#ff006e] font-mono text-base sm:text-lg">opening bottle{dots}</p>
+          <p className="text-white/40 font-mono text-xs sm:text-sm">preparing your message</p>
+        </div>
       </div>
     )
   }

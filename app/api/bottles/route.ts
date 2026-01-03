@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { withAuth } from '@/lib/middleware'
+import { withAuth, withValidatedAuth } from '@/lib/middleware'
 import { prisma } from '@/lib/prisma'
-import type { BottleContent } from '@/lib/types'
+import { createBottleSchema } from '@/lib/schemas'
 import { generateMoodAndEmbedding } from '@/lib/openai'
 
 // Get bottles (admin: all bottles with opens, user: assigned unopened bottles only)
@@ -78,32 +78,15 @@ export async function GET(request: NextRequest) {
 
 // Create a new bottle (admin only)
 export async function POST(request: NextRequest) {
-
-  return withAuth(request, async (_req, user) => {
+  return withValidatedAuth(request, createBottleSchema, async (_req, user, data) => {
     if (!user.isAdmin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
     try {
-      const { name, content, assignedViewerId }: { name: string, content: BottleContent, assignedViewerId: number } = await request.json()
-
-
-      // Basic validation
-      if (!name) {
-        return NextResponse.json({ error: 'Bottle name is required' }, { status: 400 })
-      }
-
-      if (!content.blocks || content.blocks.length === 0) {
-        return NextResponse.json({ error: 'Invalid bottle content' }, { status: 400 })
-      }
-
-      if (!assignedViewerId) {
-        return NextResponse.json({ error: 'Assigned viewer is required' }, { status: 400 })
-      }
-
       // Verify the assigned viewer exists
       const assignedUser = await prisma.user.findUnique({
-        where: { id: assignedViewerId },
+        where: { id: data.assignedViewerId },
       })
 
       if (!assignedUser) {
@@ -111,15 +94,15 @@ export async function POST(request: NextRequest) {
       }
 
       // Generate mood and embedding using OpenAI
-      const { mood, embedding } = await generateMoodAndEmbedding(content)
+      const { mood, embedding } = await generateMoodAndEmbedding(data.content)
 
       // First create the bottle without embedding
       const bottle = await prisma.bottle.create({
         data: {
-          name,
-          content: content as any,
+          name: data.name,
+          content: data.content as any,
           mood,
-          assignedViewerId,
+          assignedViewerId: data.assignedViewerId,
         },
       })
 
