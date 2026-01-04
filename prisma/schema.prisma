@@ -24,6 +24,8 @@ model User {
   journals        JournalEntry[]
   bottleOpens     BottleOpen[]
   assignedBottles Bottle[]       @relation("AssignedBottles")
+  uploadedImages  Image[]
+  imageAccess     ImageAccess[]
 
   @@map("users")
 }
@@ -73,4 +75,37 @@ model BottleOpen {
 
   @@unique([bottleId, userId]) // Can't open same bottle twice
   @@map("bottle_opens")
+}
+
+model Image {
+  id          String   @id @default(uuid())
+  userId      Int      @map("user_id")
+  storageKey  String   @map("storage_key") // R2 object key
+  filename    String
+  contentType String   @map("content_type")
+  sizeBytes   Int      @map("size_bytes")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  access ImageAccess[]
+
+  @@index([userId])
+  @@map("images")
+}
+
+model ImageAccess {
+  id          String    @id @default(uuid())
+  imageId     String    @map("image_id")
+  userId      Int       @map("user_id")
+  accessCount Int       @default(0) @map("access_count")
+  maxViews    Int?      @map("max_views") // NULL = unlimited
+  expiresAt   DateTime? @map("expires_at") // NULL = never expires
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  image Image @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([imageId, userId]) // One access record per user per image
+  @@index([imageId, userId])
+  @@map("image_access")
 }

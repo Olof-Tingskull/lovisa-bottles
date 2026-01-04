@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
+import { encryptTextServer, decryptTextServer } from '@/lib/encryption-server-crypto'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
@@ -8,14 +9,23 @@ export async function POST(request: NextRequest) {
       const { date, entry } = await req.json()
 
       if (!date || !entry) {
-        return NextResponse.json({ error: 'Date, and entry are required' }, { status: 400 })
+        return NextResponse.json({ error: 'Date and entry are required' }, { status: 400 })
       }
+
+      // Get encryption key from cookie
+      const encryptionKey = req.cookies.get('encryptionKey')?.value
+      if (!encryptionKey) {
+        return NextResponse.json({ error: 'Encryption key not found. Please log in again.' }, { status: 401 })
+      }
+
+      // Encrypt entry before storing
+      const encryptedEntry = encryptTextServer(entry, encryptionKey)
 
       const journalEntry = await prisma.journalEntry.create({
         data: {
           userId: user.id,
           date: new Date(date),
-          entry, // Already encrypted on client side
+          entry: encryptedEntry,
         },
       })
 
@@ -32,8 +42,14 @@ export async function POST(request: NextRequest) {
 
 // Get all journal entries with bottle info
 export async function GET(request: NextRequest) {
-  return withAuth(request, async (_req, user) => {
+  return withAuth(request, async (req, user) => {
     try {
+      // Get encryption key from cookie
+      const encryptionKey = req.cookies.get('encryptionKey')?.value
+      if (!encryptionKey) {
+        return NextResponse.json({ error: 'Encryption key not found. Please log in again.' }, { status: 401 })
+      }
+
       const entries = await prisma.journalEntry.findMany({
         where: {
           userId: user.id,
@@ -55,7 +71,19 @@ export async function GET(request: NextRequest) {
         },
       })
 
-      return NextResponse.json({ entries })
+      // Decrypt all entries before sending to client
+      const decryptedEntries = entries.map((entry) => {
+        try {
+          const decryptedEntry = decryptTextServer(entry.entry, encryptionKey)
+          return { ...entry, entry: decryptedEntry }
+        } catch (error) {
+          console.error('Failed to decrypt journal entry:', error)
+          // Return with error message if decryption fails
+          return { ...entry, entry: '[Decryption failed - encrypted data]' }
+        }
+      })
+
+      return NextResponse.json({ entries: decryptedEntries })
     } catch (error) {
       console.error('Journal fetch error:', error)
       return NextResponse.json({ error: 'Failed to fetch journal entries' }, { status: 500 })

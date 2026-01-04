@@ -143,7 +143,11 @@ export default function AdminPage() {
       }
 
       const data = await res.json()
-      updateBlock(index, 'url', data.url)
+      // Upload now returns { id, filename, size, contentType }
+      // Store the image access URL
+      updateBlock(index, 'url', `/api/images/${data.id}`)
+      // Also store the image ID for access granting
+      updateBlock(index, 'imageId', data.id)
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Failed to upload file')
     } finally {
@@ -200,6 +204,25 @@ export default function AdminPage() {
       }
 
       await res.json()
+
+      // Grant access to uploaded images for the assigned viewer
+      const imageBlocks = validBlocks.filter(
+        (block) => block.type === 'image' && (block as any).imageId
+      )
+
+      for (const block of imageBlocks) {
+        const imageId = (block as any).imageId
+        try {
+          await fetch(`/api/images/${imageId}/grant-access`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ userId: assignedViewerId }),
+          })
+        } catch (err) {
+          console.error(`Failed to grant access for image ${imageId}:`, err)
+        }
+      }
 
       setMessage('Bottle created successfully!')
       setBottleName('')
@@ -322,7 +345,7 @@ export default function AdminPage() {
 
                   {block.type === 'text' && (
                     <textarea
-                      value={block.content}
+                      value={block.content || ''}
                       onChange={(e) => updateBlock(index, 'content', e.target.value)}
                       rows={4}
                       className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
@@ -353,8 +376,7 @@ export default function AdminPage() {
                             </label>
                           </div>
                           <input
-                            type="url"
-                            value={block.url}
+                            value={block.url || ''}
                             onChange={(e) => updateBlock(index, 'url', e.target.value)}
                             className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                             placeholder="or paste url..."
@@ -371,7 +393,7 @@ export default function AdminPage() {
                       {(block.type === 'video' || block.type === 'voice') && (
                         <input
                           type="url"
-                          value={block.url}
+                          value={block.url || ''}
                           onChange={(e) => updateBlock(index, 'url', e.target.value)}
                           className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                           placeholder="url..."
@@ -380,7 +402,7 @@ export default function AdminPage() {
                       {(block.type === 'image' || block.type === 'video') && (
                         <input
                           type="text"
-                          value={block.caption || ''}
+                          value={(block.caption ?? '') || ''}
                           onChange={(e) => updateBlock(index, 'caption', e.target.value)}
                           className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                           placeholder="caption (optional)..."
@@ -389,9 +411,9 @@ export default function AdminPage() {
                       {block.type === 'voice' && (
                         <input
                           type="number"
-                          value={block.duration || 0}
+                          value={(block.duration ?? 0) || 0}
                           onChange={(e) =>
-                            updateBlock(index, 'duration', parseInt(e.target.value, 10))
+                            updateBlock(index, 'duration', parseInt(e.target.value, 10) || 0)
                           }
                           className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                           placeholder="duration (sec)..."

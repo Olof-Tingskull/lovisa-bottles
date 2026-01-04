@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { withValidation } from '@/lib/middleware'
 import { hashPassword, generateToken } from '@/lib/auth'
+import { deriveEncryptionKey } from '@/lib/encryption-server'
 import { prisma } from '@/lib/prisma'
 import { setupSchema } from '@/lib/schemas'
 
@@ -26,8 +27,9 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // Generate JWT token and set cookie for auto-login
+      // Generate JWT token and encryption key
       const token = generateToken(user.id, user.email, user.isAdmin)
+      const encryptionKey = deriveEncryptionKey(data.password)
 
       const response = NextResponse.json({
         success: true,
@@ -35,8 +37,18 @@ export async function POST(request: NextRequest) {
         email: user.email,
       })
 
+      // Set auth token cookie (HTTP-only for security)
       response.cookies.set('token', token, {
         httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+      })
+
+      // Set encryption key cookie (HTTP-only for security)
+      response.cookies.set('encryptionKey', encryptionKey, {
+        httpOnly: true, // Server-side decryption only
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 30, // 30 days

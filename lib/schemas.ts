@@ -11,19 +11,19 @@ export const textBlockSchema = z.object({
 
 export const imageBlockSchema = z.object({
   type: z.literal('image'),
-  url: z.string().url('Invalid image URL'),
+  url: z.string().min(1, 'Image URL is required'), // Accept both full URLs and paths like /api/images/[id]
   caption: z.string().optional(),
 })
 
 export const videoBlockSchema = z.object({
   type: z.literal('video'),
-  url: z.string().url('Invalid video URL'),
+  url: z.string().min(1, 'Video URL is required'), // Accept both full URLs and paths
   caption: z.string().optional(),
 })
 
 export const voiceBlockSchema = z.object({
   type: z.literal('voice'),
-  url: z.string().url('Invalid voice URL'),
+  url: z.string().min(1, 'Voice URL is required'), // Accept both full URLs and paths
   duration: z.number().positive().optional(),
 })
 

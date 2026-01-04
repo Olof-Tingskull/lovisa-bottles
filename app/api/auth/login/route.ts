@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { withValidation } from '@/lib/middleware'
 import { generateToken, verifyPassword } from '@/lib/auth'
+import { deriveEncryptionKey } from '@/lib/encryption-server'
 import { prisma } from '@/lib/prisma'
 import { loginSchema } from '@/lib/schemas'
 
@@ -23,17 +24,27 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
       }
 
-      // Generate JWT token with user info
+      // Generate JWT token and encryption key
       const token = generateToken(user.id, user.email, user.isAdmin)
+      const encryptionKey = deriveEncryptionKey(data.password)
 
       const response = NextResponse.json({
         isAdmin: user.isAdmin,
         email: user.email,
       })
 
-      // Set HTTP-only cookie
+      // Set auth token cookie (HTTP-only for security)
       response.cookies.set('token', token, {
         httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+      })
+
+      // Set encryption key cookie (HTTP-only for security)
+      response.cookies.set('encryptionKey', encryptionKey, {
+        httpOnly: true, // Server-side decryption only
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 30, // 30 days

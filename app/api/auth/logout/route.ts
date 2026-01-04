@@ -12,5 +12,14 @@ export async function POST() {
     path: '/',
   })
 
+  // Clear the encryption key cookie
+  response.cookies.set('encryptionKey', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0, // Expire immediately
+    path: '/',
+  })
+
   return response
 }

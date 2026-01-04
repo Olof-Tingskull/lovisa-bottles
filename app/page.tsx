@@ -51,6 +51,7 @@ export default function HomePage() {
 
       if (res.ok) {
         const data = await res.json()
+        // Entries are already decrypted by the server
         setJournals(data.entries)
       }
     } catch (err) {
@@ -73,6 +74,7 @@ export default function HomePage() {
     setSubmitting(true)
 
     try {
+      // Send plaintext to server (server will encrypt before DB storage)
       const res = await fetch('/api/journal/submit', {
         method: 'POST',
         headers: {

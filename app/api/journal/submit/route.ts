@@ -2,16 +2,23 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { prisma } from '@/lib/prisma'
 import { generateMoodQuery, generateTextEmbedding, pickBestBottle } from '@/lib/openai'
+import { encryptTextServer } from '@/lib/encryption-server-crypto'
 import { Prisma } from '@prisma/client'
 
 // Submit journal and try to open a bottle
 export async function POST(request: NextRequest) {
-  return withAuth(request, async (_req, user) => {
+  return withAuth(request, async (req, user) => {
     try {
-      const { entry } = await request.json()
+      const { entry } = await req.json()
 
       if (!entry) {
         return NextResponse.json({ error: 'Journal entry is required' }, { status: 400 })
+      }
+
+      // Get encryption key from cookie for encrypting before storage
+      const encryptionKey = req.cookies.get('encryptionKey')?.value
+      if (!encryptionKey) {
+        return NextResponse.json({ error: 'Encryption key not found. Please log in again.' }, { status: 401 })
       }
 
 
@@ -32,11 +39,14 @@ export async function POST(request: NextRequest) {
         })
 
         if (openedToday) {
+          // Encrypt entry before storing
+          const encryptedEntry = encryptTextServer(entry, encryptionKey)
+
           const journalEntry = await prisma.journalEntry.create({
             data: {
               userId: user.id,
               date: new Date(),
-              entry,
+              entry: encryptedEntry,
             },
           })
 
@@ -83,11 +93,14 @@ export async function POST(request: NextRequest) {
       }
 
       if (topBottles.length === 0) {
+        // Encrypt entry before storing
+        const encryptedEntry = encryptTextServer(entry, encryptionKey)
+
         const journalEntry = await prisma.journalEntry.create({
           data: {
             userId: user.id,
             date: new Date(),
-            entry,
+            entry: encryptedEntry,
           },
         })
 
@@ -115,14 +128,17 @@ export async function POST(request: NextRequest) {
         finalBottle = topBottles[0]
       }
 
+      // Encrypt entry before storing
+      const encryptedEntry = encryptTextServer(entry, encryptionKey)
+
       // Create journal and open bottle in transaction
       const result = await prisma.$transaction(async (tx) => {
-        // Create journal entry first
+        // Create journal entry first (encrypted)
         const journalEntry = await tx.journalEntry.create({
           data: {
             userId: user.id,
             date: new Date(),
-            entry,
+            entry: encryptedEntry,
           },
         })
 
