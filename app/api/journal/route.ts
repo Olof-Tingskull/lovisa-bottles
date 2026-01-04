@@ -78,8 +78,8 @@ export async function GET(request: NextRequest) {
           return { ...entry, entry: decryptedEntry }
         } catch (error) {
           console.error('Failed to decrypt journal entry:', error)
-          // Return with error message if decryption fails
-          return { ...entry, entry: '[Decryption failed - encrypted data]' }
+          // Return raw encrypted string if decryption fails
+          return { ...entry }
         }
       })
 
