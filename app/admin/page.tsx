@@ -1,106 +1,56 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import type { BottleBlock, BottleContent } from '@/lib/types'
-
-interface Bottle {
-  id: number
-  name: string
-  content: BottleContent
-  createdAt: string
-  opens: {
-    id: number
-    openedAt: string
-    user: {
-      email: string
-    }
-  }[]
-}
-
-interface User {
-  id: number
-  email: string
-  isAdmin: boolean
-}
+import type { BottleBlock } from '@/lib/types'
+import { api } from '@/lib/trpc/client'
 
 export default function AdminPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
-  const [bottles, setBottles] = useState<Bottle[]>([])
-  const [loadingBottles, setLoadingBottles] = useState(true)
-  const [error, setError] = useState('')
+  const utils = api.useUtils()
+
+  // ✅ Replace manual fetch with tRPC queries
+  const { data: bottlesData, isLoading: loadingBottles, error: bottlesError } = api.bottles.listAll.useQuery(undefined, {
+    enabled: !!user, // Only run when user is loaded
+  })
+
+  const { data: usersData, isLoading: loadingUsers } = api.users.list.useQuery(undefined, {
+    enabled: !!user,
+  })
 
   // Form state
   const [bottleName, setBottleName] = useState('')
   const [blocks, setBlocks] = useState<BottleBlock[]>([{ type: 'text', content: '' }])
-  const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
   const [uploading, setUploading] = useState<number | null>(null)
   const [assignedViewerId, setAssignedViewerId] = useState<number | null>(null)
-  const [users, setUsers] = useState<User[]>([])
-  const [loadingUsers, setLoadingUsers] = useState(true)
+
+  // ✅ Replace manual fetch mutation with tRPC mutation
+  const createBottle = api.bottles.create.useMutation({
+    onSuccess: () => {
+      setMessage('Bottle created successfully!')
+      setBottleName('')
+      setBlocks([{ type: 'text', content: '' }])
+      setAssignedViewerId(null)
+      // Refetch bottles list
+      utils.bottles.listAll.invalidate()
+    },
+    onError: (error) => {
+      setMessage(error.message)
+    },
+  })
+
+  const bottles = (bottlesData?.bottles || []) as any[]
+  const users = usersData?.users || []
+  const error = bottlesError?.message || ''
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/login')
     }
   }, [user, isLoading, router])
-
-  const fetchBottles = useCallback(async () => {
-    try {
-      const res = await fetch('/api/admin/bottles', {
-        credentials: 'include',
-      })
-
-      if (!res.ok) {
-        // Try to parse as JSON, but handle HTML errors
-        const text = await res.text()
-        try {
-          const data = JSON.parse(text)
-          throw new Error(data.error || 'Failed to fetch bottles')
-        } catch {
-          console.error('API returned HTML:', text.substring(0, 200))
-          throw new Error('API error - Please restart the dev server')
-        }
-      }
-
-      const data = await res.json()
-      setBottles(data.bottles)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setLoadingBottles(false)
-    }
-  }, [])
-
-  const fetchUsers = useCallback(async () => {
-    try {
-      const res = await fetch('/api/users', {
-        credentials: 'include',
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to fetch users')
-      }
-
-      const data = await res.json()
-      setUsers(data.users)
-    } catch (err) {
-      console.error('Failed to fetch users:', err)
-    } finally {
-      setLoadingUsers(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (user) {
-      fetchBottles()
-      fetchUsers()
-    }
-  }, [fetchBottles, fetchUsers, user])
 
   const addBlock = (type: BottleBlock['type']) => {
     const newBlock: BottleBlock =
@@ -158,7 +108,6 @@ export default function AdminPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setMessage('')
-    setSubmitting(true)
 
     try {
       // Filter out empty blocks
@@ -178,32 +127,12 @@ export default function AdminPage() {
         throw new Error('Please select an assigned viewer')
       }
 
-      const res = await fetch('/api/bottles', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: bottleName,
-          content: { blocks: validBlocks },
-          assignedViewerId,
-        }),
+      // ✅ Use tRPC mutation instead of fetch
+      await createBottle.mutateAsync({
+        name: bottleName,
+        content: { blocks: validBlocks },
+        assignedViewerId,
       })
-
-      if (!res.ok) {
-        // Try to parse as JSON, but handle HTML errors
-        const text = await res.text()
-        try {
-          const data = JSON.parse(text)
-          throw new Error(data.error || 'Failed to create bottle')
-        } catch {
-          console.error('API returned HTML:', text.substring(0, 200))
-          throw new Error('API error - Please restart the dev server')
-        }
-      }
-
-      await res.json()
 
       // Grant access to uploaded images for the assigned viewer
       const imageBlocks = validBlocks.filter(
@@ -223,16 +152,8 @@ export default function AdminPage() {
           console.error(`Failed to grant access for image ${imageId}:`, err)
         }
       }
-
-      setMessage('Bottle created successfully!')
-      setBottleName('')
-      setBlocks([{ type: 'text', content: '' }])
-      setAssignedViewerId(null)
-      fetchBottles()
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setSubmitting(false)
     }
   }
 
@@ -464,10 +385,10 @@ export default function AdminPage() {
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={createBottle.isPending}
               className="w-full py-2 text-xs sm:text-sm text-black bg-[#ff006e] hover:bg-[#ff0080] transition disabled:opacity-50 font-mono"
             >
-              {submitting ? 'CREATING...' : 'CREATE'}
+              {createBottle.isPending ? 'CREATING...' : 'CREATE'}
             </button>
           </form>
         </div>
@@ -501,15 +422,15 @@ export default function AdminPage() {
                     </button>
                   </div>
                   <div className="text-xs text-white/50 font-mono space-y-1">
-                    <p>blocks: {bottle.content.blocks.length}</p>
+                    <p>blocks: {(bottle.content as any)?.blocks?.length || 0}</p>
                     <p>opens: {bottle.opens.length}</p>
                   </div>
                   {bottle.opens.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-white/10">
                       <p className="text-xs text-white/50 mb-2 font-mono">recent:</p>
                       <ul className="space-y-1">
-                        {bottle.opens.slice(0, 3).map((open) => (
-                          <li key={open.id} className="text-xs text-white/40 font-mono break-all">
+                        {bottle.opens.slice(0, 3).map((open: any, idx: number) => (
+                          <li key={idx} className="text-xs text-white/40 font-mono break-all">
                             {open.user.email} /{' '}
                             {new Date(open.openedAt).toLocaleDateString('en-US', {
                               month: '2-digit',

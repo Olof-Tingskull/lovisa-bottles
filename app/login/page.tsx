@@ -3,15 +3,34 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
+import { api } from '@/lib/trpc/client'
 
 export default function LoginPage() {
   const [isSignup, setIsSignup] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
   const router = useRouter()
   const { login, user } = useAuth()
+
+  // ✅ tRPC mutations for auth
+  const loginMutation = api.auth.login.useMutation({
+    onSuccess: () => {
+      router.push('/')
+    },
+    onError: (error) => {
+      setError(error.message)
+    },
+  })
+
+  const signupMutation = api.auth.setup.useMutation({
+    onSuccess: () => {
+      router.push('/')
+    },
+    onError: (error) => {
+      setError(error.message)
+    },
+  })
 
   useEffect(() => {
     if (user) {
@@ -22,34 +41,22 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setLoading(true)
 
     try {
       if (isSignup) {
-        const res = await fetch('/api/auth/setup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ email, password }),
-        })
-
-        if (!res.ok) {
-          const data = await res.json()
-          throw new Error(data.error || 'Signup failed')
-        }
-
-        // Cookie is already set by the server, navigate to home
-        router.push('/')
+        // ✅ Use tRPC mutation for signup
+        await signupMutation.mutateAsync({ email, password })
       } else {
+        // Keep existing login method from auth context
         await login(email, password)
         router.push('/')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setLoading(false)
     }
   }
+
+  const loading = loginMutation.isPending || signupMutation.isPending
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-black">

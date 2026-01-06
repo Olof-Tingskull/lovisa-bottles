@@ -14,8 +14,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Message in a Bottle',
-  description: 'A romantic gift for staying connected',
+  title: 'Lovisa flaskpost',
   viewport: {
     width: 'device-width',
     initialScale: 1,
