@@ -114,13 +114,14 @@ export const bottlesRouter = router({
     }
 
     // Generate mood and embedding using OpenAI
-    const { mood, embedding } = await generateMoodAndEmbedding(input.content)
+    const { mood, embedding } = await generateMoodAndEmbedding(input.content, input.description)
 
     // Create the bottle without embedding
     const bottle = await prisma.bottle.create({
       data: {
         name: input.name,
         content: input.content as any,
+        description: input.description,
         mood,
         assignedViewerId: input.assignedViewerId,
       },

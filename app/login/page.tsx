@@ -13,7 +13,6 @@ export default function LoginPage() {
   const router = useRouter()
   const { login, user } = useAuth()
 
-  // ✅ tRPC mutations for auth
   const loginMutation = api.auth.login.useMutation({
     onSuccess: () => {
       router.push('/')

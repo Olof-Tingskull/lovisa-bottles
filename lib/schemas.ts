@@ -60,6 +60,7 @@ export const setupSchema = z.object({
 export const createBottleSchema = z.object({
   name: z.string().min(1, 'Bottle name is required'),
   content: bottleContentSchema,
+  description: z.string().optional(),
   assignedViewerId: z.number().int().positive('Invalid assigned viewer ID'),
 })
 

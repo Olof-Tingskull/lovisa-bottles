@@ -35,14 +35,20 @@ export const authRouter = router({
     const token = generateToken(user.id, user.email, user.isAdmin)
     const encryptionKey = deriveEncryptionKey(input.password)
 
+    // ✅ Set HTTP-only cookies using response headers
+    ctx.resHeaders.append(
+      'Set-Cookie',
+      `token=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 7}` // 7 days
+    )
+    ctx.resHeaders.append(
+      'Set-Cookie',
+      `encryptionKey=${encryptionKey}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 7}`
+    )
+
     return {
       success: true,
       email: user.email,
       isAdmin: user.isAdmin,
-      // Note: In tRPC, we'll need to handle cookie setting in the response headers
-      // This will be done in the API route handler
-      _token: token,
-      _encryptionKey: encryptionKey,
     }
   }),
 
@@ -50,7 +56,7 @@ export const authRouter = router({
    * Setup/register new user
    * Creates account and returns user info with cookies
    */
-  setup: publicProcedure.input(setupSchema).mutation(async ({ input }) => {
+  setup: publicProcedure.input(setupSchema).mutation(async ({ input, ctx }) => {
     // Check if user with this email already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: input.email },
@@ -74,12 +80,20 @@ export const authRouter = router({
     const token = generateToken(user.id, user.email, user.isAdmin)
     const encryptionKey = deriveEncryptionKey(input.password)
 
+    // ✅ Set HTTP-only cookies using response headers
+    ctx.resHeaders.append(
+      'Set-Cookie',
+      `token=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 7}` // 7 days
+    )
+    ctx.resHeaders.append(
+      'Set-Cookie',
+      `encryptionKey=${encryptionKey}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 7}`
+    )
+
     return {
       success: true,
       email: user.email,
       isAdmin: user.isAdmin,
-      _token: token,
-      _encryptionKey: encryptionKey,
     }
   }),
 

@@ -22,6 +22,7 @@ export default function AdminPage() {
 
   // Form state
   const [bottleName, setBottleName] = useState('')
+  const [description, setDescription] = useState('')
   const [blocks, setBlocks] = useState<BottleBlock[]>([{ type: 'text', content: '' }])
   const [message, setMessage] = useState('')
   const [uploading, setUploading] = useState<number | null>(null)
@@ -32,6 +33,7 @@ export default function AdminPage() {
     onSuccess: () => {
       setMessage('Bottle created successfully!')
       setBottleName('')
+      setDescription('')
       setBlocks([{ type: 'text', content: '' }])
       setAssignedViewerId(null)
       // Refetch bottles list
@@ -131,6 +133,7 @@ export default function AdminPage() {
       await createBottle.mutateAsync({
         name: bottleName,
         content: { blocks: validBlocks },
+        description: description.trim() || undefined,
         assignedViewerId,
       })
 
@@ -227,6 +230,22 @@ export default function AdminPage() {
                 onChange={(e) => setBottleName(e.target.value)}
                 className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
                 placeholder="bottle name..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs sm:text-sm text-white/60 font-mono mb-2">
+                description (optional):
+              </label>
+              <p className="text-xs text-white/40 font-mono mb-2">
+                context for AI mood generation (not shown to user)
+              </p>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-white/20 bg-black focus:outline-none focus:border-[#ff006e] text-white placeholder-white/30 font-mono text-base"
+                placeholder="additional context to guide the mood generation..."
               />
             </div>
 

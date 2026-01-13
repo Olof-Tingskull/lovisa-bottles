@@ -46,7 +46,7 @@ export type BottleContent = BottleContentType
 /**
  * Generate a mood description from bottle content using GPT-4
  */
-export async function generateMoodFromContent(content: BottleContent): Promise<string> {
+export async function generateMoodFromContent(content: BottleContent, description?: string): Promise<string> {
   // Extract all text content from the bottle
   const textContent = content.blocks
     .map((block) => {
@@ -63,6 +63,15 @@ export async function generateMoodFromContent(content: BottleContent): Promise<s
     .filter(Boolean)
     .join('\n\n')
 
+  // Build the user prompt with optional description context
+  let userPrompt = 'Analyze this bottle content and generate a mood description:\n\n'
+
+  if (description && description.trim()) {
+    userPrompt += `Context (for your understanding, not shown to user):\n${description.trim()}\n\n`
+  }
+
+  userPrompt += `Bottle content:\n${textContent}`
+
   const openai = getOpenAIClient()
   const response = await openai.chat.completions.create({
     model: 'gpt-5-mini',
@@ -73,7 +82,7 @@ export async function generateMoodFromContent(content: BottleContent): Promise<s
       },
       {
         role: 'user',
-        content: `Analyze this bottle content and generate a mood description:\n\n${textContent}`,
+        content: userPrompt,
       },
     ],
   })
@@ -105,8 +114,9 @@ export async function generateMoodEmbedding(mood: string): Promise<number[]> {
  */
 export async function generateMoodAndEmbedding(
   content: BottleContent,
+  description?: string,
 ): Promise<{ mood: string; embedding: number[] }> {
-  const mood = await generateMoodFromContent(content)
+  const mood = await generateMoodFromContent(content, description)
   const embedding = await generateMoodEmbedding(mood)
 
   return { mood, embedding }

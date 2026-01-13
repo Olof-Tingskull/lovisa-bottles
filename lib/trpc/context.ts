@@ -9,19 +9,21 @@ export interface AuthenticatedUser {
 
 export interface Context {
   user: AuthenticatedUser | null
+  resHeaders: Headers
 }
 
 /**
  * Creates context for tRPC procedures
  * Extracts user from HTTP-only cookie token
+ * Provides access to response headers for setting cookies
  */
 export async function createContext(opts: FetchCreateContextFnOptions): Promise<Context> {
-  const { req } = opts
+  const { req, resHeaders } = opts
 
   // Extract token from HTTP-only cookie
   const cookieHeader = req.headers.get('cookie')
   if (!cookieHeader) {
-    return { user: null }
+    return { user: null, resHeaders }
   }
 
   // Parse cookie header to find token
@@ -34,13 +36,13 @@ export async function createContext(opts: FetchCreateContextFnOptions): Promise<
 
   const token = cookies.token
   if (!token) {
-    return { user: null }
+    return { user: null, resHeaders }
   }
 
   // Verify JWT token
   const payload = verifyToken(token)
   if (!payload) {
-    return { user: null }
+    return { user: null, resHeaders }
   }
 
   return {
@@ -49,6 +51,7 @@ export async function createContext(opts: FetchCreateContextFnOptions): Promise<
       email: payload.email,
       isAdmin: payload.isAdmin,
     },
+    resHeaders,
   }
 }
 

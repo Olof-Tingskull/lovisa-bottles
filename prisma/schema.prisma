@@ -51,6 +51,7 @@ model Bottle {
   id              Int                        @id @default(autoincrement())
   name            String // Display name/title for the bottle
   content         Json // All content blocks (text, images, videos, etc)
+  description     String? @db.Text // Admin's contextual description for mood generation (not shown to user)
   mood            String? // AI-generated mood description
   moodEmbedding   Unsupported("vector(1536)")? @map("mood_embedding") // OpenAI embedding of mood
   assignedViewerId Int                       @map("assigned_viewer_id") // User who can view this bottle

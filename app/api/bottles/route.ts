@@ -94,13 +94,14 @@ export async function POST(request: NextRequest) {
       }
 
       // Generate mood and embedding using OpenAI
-      const { mood, embedding } = await generateMoodAndEmbedding(data.content)
+      const { mood, embedding } = await generateMoodAndEmbedding(data.content, data.description)
 
       // First create the bottle without embedding
       const bottle = await prisma.bottle.create({
         data: {
           name: data.name,
           content: data.content as any,
+          description: data.description,
           mood,
           assignedViewerId: data.assignedViewerId,
         },
