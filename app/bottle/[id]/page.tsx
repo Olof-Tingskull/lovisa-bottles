@@ -79,7 +79,6 @@ export default function BottlePage() {
                 }}
               />
             </div>
-            {block.caption && <p className="text-xs sm:text-sm text-white/40 font-mono">{block.caption}</p>}
           </div>
         )
 
@@ -87,7 +86,6 @@ export default function BottlePage() {
         return (
           <div key={index} className="space-y-2 sm:space-y-3">
             <video src={block.url} controls className="w-full border border-white/10" />
-            {block.caption && <p className="text-xs sm:text-sm text-white/40 font-mono">{block.caption}</p>}
           </div>
         )
 
